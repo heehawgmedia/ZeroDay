@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JARVIS — Project Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <!-- Markdown renderer -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
+  <aside id="sidebar">
+    <div id="logo">
+      <h1>JARVIS</h1>
+      <p>Project Intelligence System</p>
+    </div>
+
+    <div id="integrations">
+      <h3>Integrations</h3>
+      <div id="integration-list">
+        <!-- populated by JS -->
+        <div class="integration-item"><span class="dot off"></span><span>Loading…</span></div>
+      </div>
+    </div>
+
+    <div id="quick-actions">
+      <h3>Quick Commands</h3>
+      <button class="quick-btn" data-prompt="Give me a full project status update across all integrations.">
+        📊 Full Status Update
+      </button>
+      <button class="quick-btn" data-prompt="What are my most urgent open GitHub issues and pull requests?">
+        🚨 Urgent GitHub Items
+      </button>
+      <button class="quick-btn" data-prompt="Show me my analytics summary for the last 7 days.">
+        📈 Analytics (7 days)
+      </button>
+      <button class="quick-btn" data-prompt="What tasks are currently in progress or blocked across Notion, Linear, and Trello?">
+        ✅ In-Progress Tasks
+      </button>
+      <button class="quick-btn" data-prompt="What should I focus on today based on my projects and tasks?">
+        🎯 Today's Focus
+      </button>
+      <button class="quick-btn" data-prompt="List any overdue tasks or past-due items I should address.">
+        ⚠️ Overdue Items
+      </button>
+    </div>
+
+    <div id="sidebar-footer">
+      <button id="new-chat-btn">+ New Conversation</button>
+    </div>
+  </aside>
+
+  <!-- ── Main ─────────────────────────────────────────────────────────────── -->
+  <main id="main">
+    <div id="chat-header">
+      <h2>Conversation</h2>
+      <span id="status-badge">● ONLINE</span>
+    </div>
+
+    <!-- Welcome screen (shown when no messages) -->
+    <div id="welcome">
+      <h2>JARVIS</h2>
+      <p>Your AI project intelligence assistant. Ask about your GitHub repos, analytics, tasks, or get a full status update.</p>
+      <div class="suggestion-grid">
+        <button class="suggestion">Give me a full project status update</button>
+        <button class="suggestion">What should I focus on today?</button>
+        <button class="suggestion">Any overdue tasks or blockers?</button>
+        <button class="suggestion">Show my analytics for the past week</button>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    <div id="messages"></div>
+
+    <!-- Input -->
+    <div id="input-area">
+      <div id="input-wrap">
+        <textarea
+          id="user-input"
+          placeholder="Ask JARVIS anything about your projects…"
+          rows="1"
+        ></textarea>
+        <button id="send-btn" title="Send (Enter)">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <path d="M1 8l13-6-6 13-2-5-5-2z"/>
+          </svg>
+        </button>
+      </div>
+      <div id="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for newline</div>
+    </div>
+  </main>
+
+</div>
+<script src="/app.js"></script>
+</body>
+</html>
