@@ -14,6 +14,14 @@ from typing import Any
 import requests
 
 from backend.config import settings
+from backend.monitoring import (
+    check_site_health_tool,
+    get_pagespeed,
+    get_search_console_data,
+    get_sentry_issues,
+    manage_sites,
+    get_monitoring_dashboard,
+)
 
 # ── Tool schema definitions ──────────────────────────────────────────────────
 
@@ -194,6 +202,129 @@ TOOL_DEFINITIONS = [
                 "show_hidden": {"type": "boolean", "default": False},
             },
         },
+    },
+    {
+        "name": "check_site_health",
+        "description": (
+            "Check if a website is up. Returns HTTP status code, response time in ms, "
+            "SSL certificate days remaining, and redirect info."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "Full URL to check, e.g. 'https://mysite.com'.",
+                }
+            },
+            "required": ["url"],
+        },
+    },
+    {
+        "name": "get_pagespeed",
+        "description": (
+            "Run Google PageSpeed Insights on a URL. Returns performance score (0-100), "
+            "Core Web Vitals (LCP, CLS, FCP, TBT) for desktop and/or mobile."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "url": {"type": "string", "description": "URL to analyze."},
+                "strategy": {
+                    "type": "string",
+                    "enum": ["both", "desktop", "mobile"],
+                    "default": "both",
+                },
+            },
+            "required": ["url"],
+        },
+    },
+    {
+        "name": "get_search_console_data",
+        "description": (
+            "Get Google Search Console data: total clicks, impressions, average CTR, "
+            "average position, top search queries, and top performing pages."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "site_url": {
+                    "type": "string",
+                    "description": "The site URL as registered in Search Console (e.g. 'https://mysite.com/'). Leave blank to use the default.",
+                },
+                "start_date": {
+                    "type": "string",
+                    "description": "Start date: 'YYYY-MM-DD' or '7daysAgo', '30daysAgo'.",
+                    "default": "7daysAgo",
+                },
+                "end_date": {
+                    "type": "string",
+                    "description": "End date: 'YYYY-MM-DD' or 'today'.",
+                    "default": "today",
+                },
+            },
+        },
+    },
+    {
+        "name": "get_sentry_issues",
+        "description": (
+            "Get unresolved errors from Sentry: top issues by event count, "
+            "affected user counts, and total errors in the last 24 hours."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "org": {
+                    "type": "string",
+                    "description": "Sentry organization slug. Leave blank to use the default.",
+                },
+                "project": {
+                    "type": "string",
+                    "description": "Sentry project slug. Leave blank for all projects.",
+                },
+                "limit": {"type": "integer", "default": 10},
+            },
+        },
+    },
+    {
+        "name": "manage_sites",
+        "description": (
+            "Add, remove, or list the websites Jarvis monitors. "
+            "Use this when the user asks to start monitoring a new URL, "
+            "stop monitoring a site, or see what sites are being watched."
+        ),
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "enum": ["list", "add", "remove"],
+                    "description": "What to do.",
+                },
+                "url": {
+                    "type": "string",
+                    "description": "Site URL (required for add/remove).",
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Friendly display name for the site (optional for add).",
+                },
+                "sentry_project": {
+                    "type": "string",
+                    "description": "Sentry project slug for this specific site (optional).",
+                },
+            },
+            "required": ["action"],
+        },
+    },
+    {
+        "name": "get_monitoring_dashboard",
+        "description": (
+            "Get a full monitoring snapshot for all tracked websites: "
+            "uptime status, response time, SSL days, PageSpeed scores, and Sentry error counts. "
+            "Use this for an overview of all site health."
+        ),
+        "input_schema": {"type": "object", "properties": {}},
     },
 ]
 
@@ -605,6 +736,13 @@ _TOOL_MAP = {
     "get_trello_cards": get_trello_cards,
     "read_file": read_file,
     "list_directory": list_directory,
+    # Monitoring
+    "check_site_health": check_site_health_tool,
+    "get_pagespeed": get_pagespeed,
+    "get_search_console_data": get_search_console_data,
+    "get_sentry_issues": get_sentry_issues,
+    "manage_sites": manage_sites,
+    "get_monitoring_dashboard": get_monitoring_dashboard,
 }
 
 

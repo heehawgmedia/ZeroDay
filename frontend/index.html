@@ -7,7 +7,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/style.css" />
-  <!-- Markdown renderer -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
@@ -23,31 +22,18 @@
     <div id="integrations">
       <h3>Integrations</h3>
       <div id="integration-list">
-        <!-- populated by JS -->
         <div class="integration-item"><span class="dot off"></span><span>Loading…</span></div>
       </div>
     </div>
 
     <div id="quick-actions">
       <h3>Quick Commands</h3>
-      <button class="quick-btn" data-prompt="Give me a full project status update across all integrations.">
-        📊 Full Status Update
-      </button>
-      <button class="quick-btn" data-prompt="What are my most urgent open GitHub issues and pull requests?">
-        🚨 Urgent GitHub Items
-      </button>
-      <button class="quick-btn" data-prompt="Show me my analytics summary for the last 7 days.">
-        📈 Analytics (7 days)
-      </button>
-      <button class="quick-btn" data-prompt="What tasks are currently in progress or blocked across Notion, Linear, and Trello?">
-        ✅ In-Progress Tasks
-      </button>
-      <button class="quick-btn" data-prompt="What should I focus on today based on my projects and tasks?">
-        🎯 Today's Focus
-      </button>
-      <button class="quick-btn" data-prompt="List any overdue tasks or past-due items I should address.">
-        ⚠️ Overdue Items
-      </button>
+      <button class="quick-btn" data-prompt="Give me a full project status update across all integrations.">📊 Full Status Update</button>
+      <button class="quick-btn" data-prompt="Check all my monitored websites and report any that are down, slow, or have SSL issues.">🌐 All Site Health</button>
+      <button class="quick-btn" data-prompt="What are my most urgent open GitHub issues and pull requests?">🚨 Urgent GitHub Items</button>
+      <button class="quick-btn" data-prompt="Show me my analytics summary for the last 7 days.">📈 Analytics (7 days)</button>
+      <button class="quick-btn" data-prompt="What tasks are currently in progress or blocked?">✅ In-Progress Tasks</button>
+      <button class="quick-btn" data-prompt="What should I focus on today based on my projects and tasks?">🎯 Today's Focus</button>
     </div>
 
     <div id="sidebar-footer">
@@ -57,44 +43,67 @@
 
   <!-- ── Main ─────────────────────────────────────────────────────────────── -->
   <main id="main">
-    <div id="chat-header">
-      <h2>Conversation</h2>
-      <span id="status-badge">● ONLINE</span>
+
+    <!-- Tab bar -->
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+      <button class="tab-btn" data-tab="chat">Chat</button>
     </div>
 
-    <!-- Welcome screen (shown when no messages) -->
-    <div id="welcome">
-      <h2>JARVIS</h2>
-      <p>Your AI project intelligence assistant. Ask about your GitHub repos, analytics, tasks, or get a full status update.</p>
-      <div class="suggestion-grid">
-        <button class="suggestion">Give me a full project status update</button>
-        <button class="suggestion">What should I focus on today?</button>
-        <button class="suggestion">Any overdue tasks or blockers?</button>
-        <button class="suggestion">Show my analytics for the past week</button>
+    <!-- ── Dashboard tab ──────────────────────────────────────────────────── -->
+    <div id="tab-dashboard" class="tab-content">
+
+      <div id="dashboard-header">
+        <h2>Monitored Sites</h2>
+        <div id="add-site-form">
+          <input id="site-url-input" type="text" placeholder="https://yoursite.com" />
+          <input id="site-name-input" type="text" placeholder="Display name (optional)" />
+          <button id="add-site-btn">+ Add Site</button>
+        </div>
+      </div>
+
+      <div id="site-grid">
+        <!-- populated by JS -->
+        <div id="no-sites-msg" class="empty-state">
+          <p>No sites added yet.</p>
+          <p>Enter a URL above to start monitoring.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Chat tab ───────────────────────────────────────────────────────── -->
+    <div id="tab-chat" class="tab-content" style="display:none;">
+      <div id="chat-header">
+        <h2>Conversation</h2>
+        <span id="status-badge">● ONLINE</span>
+      </div>
+
+      <div id="welcome">
+        <h2>JARVIS</h2>
+        <p>AI project intelligence. Ask about your sites, analytics, repos, or tasks.</p>
+        <div class="suggestion-grid">
+          <button class="suggestion">Give me a full project status update</button>
+          <button class="suggestion">What should I focus on today?</button>
+          <button class="suggestion">Any sites down or with errors?</button>
+          <button class="suggestion">Show my analytics for the past week</button>
+        </div>
+      </div>
+
+      <div id="messages"></div>
+
+      <div id="input-area">
+        <div id="input-wrap">
+          <textarea id="user-input" placeholder="Ask JARVIS anything about your projects…" rows="1"></textarea>
+          <button id="send-btn" title="Send (Enter)">
+            <svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 8l13-6-6 13-2-5-5-2z"/></svg>
+          </button>
+        </div>
+        <div id="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for newline</div>
       </div>
     </div>
 
-    <!-- Messages -->
-    <div id="messages"></div>
-
-    <!-- Input -->
-    <div id="input-area">
-      <div id="input-wrap">
-        <textarea
-          id="user-input"
-          placeholder="Ask JARVIS anything about your projects…"
-          rows="1"
-        ></textarea>
-        <button id="send-btn" title="Send (Enter)">
-          <svg width="16" height="16" viewBox="0 0 16 16">
-            <path d="M1 8l13-6-6 13-2-5-5-2z"/>
-          </svg>
-        </button>
-      </div>
-      <div id="input-hint">Press <kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for newline</div>
-    </div>
   </main>
-
 </div>
 <script src="/app.js"></script>
 </body>
