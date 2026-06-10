@@ -1,0 +1,18 @@
+[
+  {
+    "id": "ml-fundamentals",
+    "title": "Machine Learning Fundamentals",
+    "description": "A comprehensive introduction to machine learning concepts, from neural networks to gradient descent. Perfect for beginners and intermediate learners.",
+    "thumbnail": "https://img.youtube.com/vi/aircAruvnKk/maxresdefault.jpg",
+    "videoIds": ["ml-neural-networks", "ml-gradient-descent", "ml-backpropagation"],
+    "createdAt": "2024-01-15T10:00:00Z"
+  },
+  {
+    "id": "cs-basics",
+    "title": "Computer Science Basics",
+    "description": "Core computer science concepts including algorithms, data structures, and programming paradigms. Build a strong foundation for any software career.",
+    "thumbnail": "https://img.youtube.com/vi/M7lc1UVf-VE/maxresdefault.jpg",
+    "videoIds": ["cs-erlang", "cs-algorithms"],
+    "createdAt": "2024-01-20T10:00:00Z"
+  }
+]
