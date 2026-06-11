@@ -77,97 +77,99 @@ class MasterScene(Scene):
         # NARRATION s0: "Before we dive in..."
         self._sound("s0")                                   # t=0
 
+        ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+        cover_path = os.path.join(ASSETS, "book_cover.png")
+
         # Sponsored label
         sponsor = Text("A MESSAGE FROM ZERO DAY LABS",
                        font_size=13, color=AMBER, weight=BOLD)
         sponsor.to_edge(UP, buff=0.28)
-        sponsor_line = Line(LEFT*5, RIGHT*5, color=AMBER, stroke_width=0.8)
+        sponsor_line = Line(LEFT*6, RIGHT*6, color=AMBER, stroke_width=0.8)
         sponsor_line.next_to(sponsor, DOWN, buff=0.1)
         self.play(FadeIn(sponsor), Create(sponsor_line), run_time=0.5) # t≈0.5
 
-        # Book cover card
-        card = RoundedRectangle(corner_radius=0.25, width=10.5, height=4.8,
-                                color=BLUE, stroke_width=2,
-                                fill_color="#050D1A", fill_opacity=1)
-        card.move_to(DOWN * 0.3)
-        self.play(FadeIn(card, scale=0.96), run_time=0.6)   # t≈1.1
+        # ── Left: book cover image ──
+        if os.path.exists(cover_path):
+            cover = ImageMobject(cover_path)
+            cover.set_height(5.5)
+            cover.move_to(LEFT * 3.3 + DOWN * 0.2)
+            # Subtle glow border
+            glow = RoundedRectangle(corner_radius=0.12,
+                                    width=cover.width + 0.12,
+                                    height=cover.height + 0.12,
+                                    color=GREEN, stroke_width=2,
+                                    fill_opacity=0)
+            glow.move_to(cover.get_center())
+            self.play(FadeIn(cover, scale=0.92), run_time=0.9)   # t≈1.4
+            self.play(Create(glow), run_time=0.4)                 # t≈1.8
+        else:
+            # Fallback placeholder if image not found
+            placeholder = RoundedRectangle(corner_radius=0.2, width=3.2, height=5.5,
+                                           color=GREEN, fill_color="#051A05",
+                                           fill_opacity=0.9, stroke_width=2)
+            placeholder.move_to(LEFT * 3.3 + DOWN * 0.2)
+            ph_txt = Text("book_cover.png\nnot found", font_size=16, color=GREEN)
+            ph_txt.move_to(placeholder.get_center())
+            self.play(FadeIn(placeholder), Write(ph_txt), run_time=0.6)
+            cover = placeholder
+            glow = ph_txt                                         # t≈1.4
 
-        # Decorative left stripe
-        stripe = Rectangle(width=0.35, height=4.8,
-                           fill_color=BLUE, fill_opacity=1, stroke_width=0)
-        stripe.align_to(card, LEFT).align_to(card, UP)
-        self.play(FadeIn(stripe), run_time=0.3)             # t≈1.4
+        # ── Right: text content ──
+        right_x = RIGHT * 1.8
 
-        # CISSP shield icon (geometric — two arcs + pentagon outline)
-        shield_body = RoundedRectangle(corner_radius=0.15, width=1.0, height=1.1,
-                                       color=AMBER, fill_color=AMBER,
-                                       fill_opacity=0.15, stroke_width=2.5)
-        shield_tip = Triangle(color=AMBER, fill_color=AMBER,
-                              fill_opacity=0.15, stroke_width=2.5)
-        shield_tip.scale(0.42).next_to(shield_body, DOWN, buff=-0.22)
-        shield = VGroup(shield_body, shield_tip)
-        shield.move_to(card.get_left() + RIGHT * 1.5 + UP * 0.2)
-        check = Text("✓", font_size=32, color=AMBER, weight=BOLD)
-        check.move_to(shield_body.get_center())
-        self.play(GrowFromCenter(shield), Write(check), run_time=0.7) # t≈2.1
-
-        # Title
-        title_line1 = heading("Think Like", size=46, color=WHITE)
-        title_line2 = heading("A CISSP", size=56, color=BLUE)
-        title_line1.move_to(card.get_center() + UP * 1.0 + RIGHT * 0.6)
-        title_line2.next_to(title_line1, DOWN, buff=0.1)
+        title_line1 = heading("Think Like", size=44, color=WHITE)
+        title_line2 = heading("A CISSP", size=54, color=BLUE)
+        title_line1.move_to(right_x + UP * 1.7)
+        title_line2.next_to(title_line1, DOWN, buff=0.08)
         title_line2.align_to(title_line1, LEFT)
 
-        self.play(Write(title_line1), run_time=0.7)
-        self.play(Write(title_line2), run_time=0.6)         # t≈3.4
+        self.play(Write(title_line1), run_time=0.6)
+        self.play(Write(title_line2), run_time=0.5)               # t≈2.9
 
-        # Divider
-        div = Line(LEFT*3.2, RIGHT*1.8, color=BLUE, stroke_width=1.2)
-        div.next_to(title_line2, DOWN, buff=0.25)
+        div = Line(ORIGIN, RIGHT * 4.8, color=BLUE, stroke_width=1.2)
+        div.next_to(title_line2, DOWN, buff=0.22)
         div.align_to(title_line1, LEFT)
-        self.play(Create(div), run_time=0.4)                # t≈3.8
+        self.play(Create(div), run_time=0.35)                     # t≈3.25
 
-        # Tagline (two lines)
         tag1 = Text("Master the mindset that separates candidates",
-                    font_size=17, color=WHITE)
-        tag2 = Text("who pass the CISSP from engineers who fail it.",
-                    font_size=17, color=WHITE)
+                    font_size=16, color=WHITE)
+        tag2 = Text("who pass from engineers who fail.", font_size=16, color=WHITE)
         tag1.next_to(div, DOWN, buff=0.2)
         tag2.next_to(tag1, DOWN, buff=0.1)
         tag1.align_to(title_line1, LEFT)
         tag2.align_to(title_line1, LEFT)
+        self.play(FadeIn(tag1, shift=UP*0.1), run_time=0.45)
+        self.play(FadeIn(tag2, shift=UP*0.1), run_time=0.45)      # t≈4.15
 
-        self.play(FadeIn(tag1, shift=UP*0.1), run_time=0.5)
-        self.play(FadeIn(tag2, shift=UP*0.1), run_time=0.5) # t≈4.8
-
-        # Sub-description
-        sub = Text("Learn to reason like a senior security leader.",
-                   font_size=15, color="#AAAAAA")
-        sub.next_to(tag2, DOWN, buff=0.18)
+        sub = Text("Reason like a senior security leader.",
+                   font_size=14, color="#AAAAAA")
+        sub.next_to(tag2, DOWN, buff=0.2)
         sub.align_to(title_line1, LEFT)
-        self.play(FadeIn(sub), run_time=0.4)                # t≈5.2
+        self.play(FadeIn(sub), run_time=0.4)                      # t≈4.55
 
         # Price badge
-        price_bg = RoundedRectangle(corner_radius=0.18, width=1.6, height=0.65,
+        price_bg = RoundedRectangle(corner_radius=0.18, width=1.7, height=0.65,
                                     fill_color=AMBER, fill_opacity=1, stroke_width=0)
-        price_txt = Text("$25.00", font_size=22, color="#0A0E1A", weight=BOLD)
-        price_bg.move_to(card.get_corner(DR) + LEFT*1.4 + UP*0.65)
+        price_txt = Text("$25.00", font_size=23, color="#0A0E1A", weight=BOLD)
+        price_bg.next_to(sub, DOWN, buff=0.35)
+        price_bg.align_to(title_line1, LEFT)
         price_txt.move_to(price_bg.get_center())
-        self.play(FadeIn(price_bg, scale=0.85), Write(price_txt), run_time=0.5) # t≈5.7
+        self.play(FadeIn(price_bg, scale=0.8), Write(price_txt), run_time=0.5) # t≈5.05
 
         # URL
         url = mono("zerodaylabs.tech/store/think-like-a-cissp",
-                   size=14, color=BLUE)
-        url.next_to(card, DOWN, buff=0.22)
-        self.play(Write(url), run_time=0.6)                 # t≈6.3
+                   size=13, color=BLUE)
+        url.next_to(price_bg, DOWN, buff=0.25)
+        url.align_to(title_line1, LEFT)
+        self.play(Write(url), run_time=0.55)                      # t≈5.6
 
-        self.wait(1.5)                                      # t≈7.8
+        self.wait(2.0)                                            # t≈7.6
 
-        # Pulse the CTA
+        # Pulse price badge as CTA
         self.play(price_bg.animate.set_fill(color="#FFD700"), run_time=0.3)
-        self.play(price_bg.animate.set_fill(color=AMBER),    run_time=0.3) # t≈8.4
+        self.play(price_bg.animate.set_fill(color=AMBER),    run_time=0.3) # t≈8.2
 
-        self._pad("s0", 8.4)
+        self._pad("s0", 8.2)
         fade_all(self)
 
     # ── helpers ──────────────────────────────────────────────────
