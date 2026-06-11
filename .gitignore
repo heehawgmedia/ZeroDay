@@ -48,3 +48,8 @@ __pycache__/
 # Generated narration audio (reproduced by generate_narration.py)
 audio/*.mp3
 audio/*.wav
+audio/
+media/
+__pycache__/
+node_modules/
+next-env.d.ts
