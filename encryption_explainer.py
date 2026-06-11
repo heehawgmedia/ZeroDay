@@ -19,6 +19,7 @@ AUDIO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
 # generate_narration.py writes audio/durations.json; fall back to the
 # Pico TTS timings if it hasn't been run yet.
 _DUR_DEFAULTS = {
+    "s0": 22.0,
     "s1": 29.3,
     "s2": 21.4,
     "s3": 55.5,
@@ -61,6 +62,7 @@ def scene_title(scene, text, color=WHITE):
 # ═══════════════════════════════════════════════════════════════════
 class MasterScene(Scene):
     def construct(self):
+        self.s0_ad()
         self.s1_hook()
         self.s2_core_question()
         self.s3_encryption()
@@ -69,6 +71,104 @@ class MasterScene(Scene):
         self.s6_use_cases()
         self.s7_never_confuse()
         self.s8_outro()
+
+    # ── SCENE 0 — Ebook Ad  (~22 s) ─────────────────────────────
+    def s0_ad(self):
+        # NARRATION s0: "Before we dive in..."
+        self._sound("s0")                                   # t=0
+
+        # Sponsored label
+        sponsor = Text("A MESSAGE FROM ZERO DAY LABS",
+                       font_size=13, color=AMBER, weight=BOLD)
+        sponsor.to_edge(UP, buff=0.28)
+        sponsor_line = Line(LEFT*5, RIGHT*5, color=AMBER, stroke_width=0.8)
+        sponsor_line.next_to(sponsor, DOWN, buff=0.1)
+        self.play(FadeIn(sponsor), Create(sponsor_line), run_time=0.5) # t≈0.5
+
+        # Book cover card
+        card = RoundedRectangle(corner_radius=0.25, width=10.5, height=4.8,
+                                color=BLUE, stroke_width=2,
+                                fill_color="#050D1A", fill_opacity=1)
+        card.move_to(DOWN * 0.3)
+        self.play(FadeIn(card, scale=0.96), run_time=0.6)   # t≈1.1
+
+        # Decorative left stripe
+        stripe = Rectangle(width=0.35, height=4.8,
+                           fill_color=BLUE, fill_opacity=1, stroke_width=0)
+        stripe.align_to(card, LEFT).align_to(card, UP)
+        self.play(FadeIn(stripe), run_time=0.3)             # t≈1.4
+
+        # CISSP shield icon (geometric — two arcs + pentagon outline)
+        shield_body = RoundedRectangle(corner_radius=0.15, width=1.0, height=1.1,
+                                       color=AMBER, fill_color=AMBER,
+                                       fill_opacity=0.15, stroke_width=2.5)
+        shield_tip = Triangle(color=AMBER, fill_color=AMBER,
+                              fill_opacity=0.15, stroke_width=2.5)
+        shield_tip.scale(0.42).next_to(shield_body, DOWN, buff=-0.22)
+        shield = VGroup(shield_body, shield_tip)
+        shield.move_to(card.get_left() + RIGHT * 1.5 + UP * 0.2)
+        check = Text("✓", font_size=32, color=AMBER, weight=BOLD)
+        check.move_to(shield_body.get_center())
+        self.play(GrowFromCenter(shield), Write(check), run_time=0.7) # t≈2.1
+
+        # Title
+        title_line1 = heading("Think Like", size=46, color=WHITE)
+        title_line2 = heading("A CISSP", size=56, color=BLUE)
+        title_line1.move_to(card.get_center() + UP * 1.0 + RIGHT * 0.6)
+        title_line2.next_to(title_line1, DOWN, buff=0.1)
+        title_line2.align_to(title_line1, LEFT)
+
+        self.play(Write(title_line1), run_time=0.7)
+        self.play(Write(title_line2), run_time=0.6)         # t≈3.4
+
+        # Divider
+        div = Line(LEFT*3.2, RIGHT*1.8, color=BLUE, stroke_width=1.2)
+        div.next_to(title_line2, DOWN, buff=0.25)
+        div.align_to(title_line1, LEFT)
+        self.play(Create(div), run_time=0.4)                # t≈3.8
+
+        # Tagline (two lines)
+        tag1 = Text("Master the mindset that separates candidates",
+                    font_size=17, color=WHITE)
+        tag2 = Text("who pass the CISSP from engineers who fail it.",
+                    font_size=17, color=WHITE)
+        tag1.next_to(div, DOWN, buff=0.2)
+        tag2.next_to(tag1, DOWN, buff=0.1)
+        tag1.align_to(title_line1, LEFT)
+        tag2.align_to(title_line1, LEFT)
+
+        self.play(FadeIn(tag1, shift=UP*0.1), run_time=0.5)
+        self.play(FadeIn(tag2, shift=UP*0.1), run_time=0.5) # t≈4.8
+
+        # Sub-description
+        sub = Text("Learn to reason like a senior security leader.",
+                   font_size=15, color="#AAAAAA")
+        sub.next_to(tag2, DOWN, buff=0.18)
+        sub.align_to(title_line1, LEFT)
+        self.play(FadeIn(sub), run_time=0.4)                # t≈5.2
+
+        # Price badge
+        price_bg = RoundedRectangle(corner_radius=0.18, width=1.6, height=0.65,
+                                    fill_color=AMBER, fill_opacity=1, stroke_width=0)
+        price_txt = Text("$25.00", font_size=22, color="#0A0E1A", weight=BOLD)
+        price_bg.move_to(card.get_corner(DR) + LEFT*1.4 + UP*0.65)
+        price_txt.move_to(price_bg.get_center())
+        self.play(FadeIn(price_bg, scale=0.85), Write(price_txt), run_time=0.5) # t≈5.7
+
+        # URL
+        url = mono("zerodaylabs.tech/store/think-like-a-cissp",
+                   size=14, color=BLUE)
+        url.next_to(card, DOWN, buff=0.22)
+        self.play(Write(url), run_time=0.6)                 # t≈6.3
+
+        self.wait(1.5)                                      # t≈7.8
+
+        # Pulse the CTA
+        self.play(price_bg.animate.set_fill(color="#FFD700"), run_time=0.3)
+        self.play(price_bg.animate.set_fill(color=AMBER),    run_time=0.3) # t≈8.4
+
+        self._pad("s0", 8.4)
+        fade_all(self)
 
     # ── helpers ──────────────────────────────────────────────────
     def _sound(self, key):

@@ -30,6 +30,14 @@ ELEVEN_VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
 ELEVEN_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 
 NARRATIONS = {
+    "s0": (
+        "Before we dive in — if this video gets you thinking like a security professional, "
+        "imagine what a full guide could do. "
+        "Think Like A CISSP teaches you the senior security mindset that separates "
+        "candidates who pass from experienced engineers who fail. "
+        "Reason like a security leader, not just a technician. "
+        "Twenty five dollars at Zero Day Labs dot tech — link in the description."
+    ),
     "s1": (
         "Look at your screen right now. Every login you make, every message you send, "
         "every bank transaction you complete — all of that starts as plain, readable data. "
