@@ -1,4 +1,6 @@
 from manim import *
+import json
+import os
 import random
 
 # ─── Color Palette ───────────────────────────────────────────────
@@ -11,11 +13,12 @@ MONO  = "DejaVu Sans Mono"
 
 config.background_color = BG
 
-AUDIO = "/home/user/ZeroDay/audio"
+AUDIO = os.path.join(os.path.dirname(os.path.abspath(__file__)), "audio")
 
-# ─── Durations (seconds) per scene — must match generated audio ──
-# Run generate_narration.py to refresh these if narration changes.
-DUR = {
+# ─── Durations (seconds) per scene — synced to generated audio ──
+# generate_narration.py writes audio/durations.json; fall back to the
+# Pico TTS timings if it hasn't been run yet.
+_DUR_DEFAULTS = {
     "s1": 29.3,
     "s2": 21.4,
     "s3": 55.5,
@@ -25,6 +28,12 @@ DUR = {
     "s7": 40.0,
     "s8": 21.6,
 }
+_dur_file = os.path.join(AUDIO, "durations.json")
+if os.path.exists(_dur_file):
+    with open(_dur_file) as _f:
+        DUR = {**_DUR_DEFAULTS, **json.load(_f)}
+else:
+    DUR = _DUR_DEFAULTS
 
 # ─── Helpers ─────────────────────────────────────────────────────
 def mono(text, size=20, color=WHITE, **kw):

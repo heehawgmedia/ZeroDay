@@ -1,11 +1,33 @@
 """
 Generate narration audio for each scene of the encryption explainer video.
-Uses SVOX Pico TTS (offline, ~natural voice) → WAV → MP3 via ffmpeg.
-"""
-import subprocess, os
 
-AUDIO_DIR = "/home/user/ZeroDay/audio"
+Engine selection (automatic):
+  1. ElevenLabs  — if ELEVEN_API_KEY is set (in .env or environment). Studio quality.
+  2. SVOX Pico   — offline fallback (pico2wave), works anywhere.
+
+Outputs:
+  audio/s1.mp3 ... audio/s8.mp3
+  audio/durations.json   (read by encryption_explainer.py to sync animations)
+"""
+import json
+import os
+import subprocess
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+AUDIO_DIR = os.path.join(BASE_DIR, "audio")
 os.makedirs(AUDIO_DIR, exist_ok=True)
+
+# Load .env if python-dotenv is available
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(BASE_DIR, ".env"))
+except ImportError:
+    pass
+
+ELEVEN_API_KEY = os.environ.get("ELEVEN_API_KEY") or os.environ.get("ELEVENLABS_API_KEY")
+# Adam — classic deep narration voice. Override with ELEVEN_VOICE_ID in .env
+ELEVEN_VOICE_ID = os.environ.get("ELEVEN_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
+ELEVEN_MODEL = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 
 NARRATIONS = {
     "s1": (
@@ -120,35 +142,61 @@ NARRATIONS = {
     ),
 }
 
-def generate(key, text):
-    wav = f"{AUDIO_DIR}/{key}.wav"
-    mp3 = f"{AUDIO_DIR}/{key}.mp3"
-    # pico2wave TTS
-    subprocess.run(["pico2wave", "-l", "en-US", "-w", wav, text], check=True)
-    # Convert to MP3 with slight speed-up (0.95x → sounds slightly more natural/confident)
-    subprocess.run([
-        "ffmpeg", "-y", "-i", wav,
-        "-filter:a", "atempo=1.05",   # 5% faster = less robotic pacing
-        "-q:a", "2", mp3
-    ], check=True, capture_output=True)
-    os.remove(wav)
 
-    # Get duration
+def duration_of(path: str) -> float:
     result = subprocess.run(
         ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
-         "-of", "default=noprint_wrappers=1:nokey=1", mp3],
-        capture_output=True, text=True
+         "-of", "default=noprint_wrappers=1:nokey=1", path],
+        capture_output=True, text=True,
     )
-    dur = float(result.stdout.strip())
-    print(f"  {key}: {dur:.1f}s → {mp3}")
-    return dur
+    return float(result.stdout.strip())
+
+
+def generate_elevenlabs(key: str, text: str) -> str:
+    from elevenlabs.client import ElevenLabs
+    client = ElevenLabs(api_key=ELEVEN_API_KEY)
+    mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+    audio = client.text_to_speech.convert(
+        voice_id=ELEVEN_VOICE_ID,
+        model_id=ELEVEN_MODEL,
+        text=text,
+        output_format="mp3_44100_128",
+    )
+    with open(mp3, "wb") as f:
+        for chunk in audio:
+            f.write(chunk)
+    return mp3
+
+
+def generate_pico(key: str, text: str) -> str:
+    wav = os.path.join(AUDIO_DIR, f"{key}.wav")
+    mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+    subprocess.run(["pico2wave", "-l", "en-US", "-w", wav, text], check=True)
+    subprocess.run(
+        ["ffmpeg", "-y", "-i", wav, "-filter:a", "atempo=1.05", "-q:a", "2", mp3],
+        check=True, capture_output=True,
+    )
+    os.remove(wav)
+    return mp3
+
 
 if __name__ == "__main__":
-    print("Generating narration audio...")
+    engine = "ElevenLabs" if ELEVEN_API_KEY else "Pico (offline fallback)"
+    print(f"Engine: {engine}")
+
     durations = {}
     for key, text in NARRATIONS.items():
-        durations[key] = generate(key, text)
-    print("\nDurations:")
-    for k, v in durations.items():
-        print(f"  {k}: {v:.1f}s")
-    print(f"\nTotal: {sum(durations.values()):.1f}s ({sum(durations.values())/60:.1f} min)")
+        if ELEVEN_API_KEY:
+            mp3 = generate_elevenlabs(key, text)
+        else:
+            mp3 = generate_pico(key, text)
+        durations[key] = round(duration_of(mp3), 2)
+        print(f"  {key}: {durations[key]:.1f}s → {mp3}")
+
+    dur_path = os.path.join(AUDIO_DIR, "durations.json")
+    with open(dur_path, "w") as f:
+        json.dump(durations, f, indent=2)
+
+    total = sum(durations.values())
+    print(f"\nWrote {dur_path}")
+    print(f"Total narration: {total:.1f}s ({total/60:.1f} min)")

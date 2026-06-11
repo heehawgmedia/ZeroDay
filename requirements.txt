@@ -1,0 +1,4 @@
+manim==0.20.1
+manim-voiceover-plus
+elevenlabs>=2.1.0
+python-dotenv
