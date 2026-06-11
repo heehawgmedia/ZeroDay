@@ -44,3 +44,7 @@ next-env.d.ts
 media/
 __pycache__/
 *.pyc
+
+# Generated narration audio (reproduced by generate_narration.py)
+audio/*.mp3
+audio/*.wav
