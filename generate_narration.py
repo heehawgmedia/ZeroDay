@@ -148,6 +148,18 @@ NARRATIONS = {
         "You now know the difference. "
         "Now you think like a security professional."
     ),
+    "s9": (
+        "Thanks for watching. "
+        "If this video helped you, hit like, subscribe, and share it with someone studying for their exam — "
+        "it really does help the channel grow. "
+        "And if you want to actually pass — not just study — "
+        "check out Zero Day Labs at www dot zerodaylabs dot tech. "
+        "We use adaptive testing that learns exactly where you are weak "
+        "and drills you on what matters most, "
+        "so you spend less time grinding and more time progressing. "
+        "Train. Test. Certify. "
+        "See you in the next one."
+    ),
 }
 
 

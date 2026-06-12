@@ -28,6 +28,7 @@ _DUR_DEFAULTS = {
     "s6": 58.9,
     "s7": 40.0,
     "s8": 21.6,
+    "s9": 22.0,
 }
 _dur_file = os.path.join(AUDIO, "durations.json")
 if os.path.exists(_dur_file):
@@ -71,6 +72,7 @@ class MasterScene(Scene):
         self.s6_use_cases()
         self.s7_never_confuse()
         self.s8_outro()
+        self.s9_end_card()
 
     # ── SCENE 0 — Ebook Ad  (~22 s) ─────────────────────────────
     def s0_ad(self):
@@ -774,13 +776,69 @@ class MasterScene(Scene):
 
         elapsed = 7.45
         self._pad("s8", elapsed)
+        fade_all(self)
+
+    # ── SCENE 9 — End Card / CTA  (~22 s) ───────────────────────────
+    def s9_end_card(self):
+        # NARRATION s9: "Thanks for watching..."
+        self._sound("s9")                                       # t=0
+
+        # ── Thanks line ──
+        thanks = heading("Thanks for watching!", size=40, color=WHITE)
+        thanks.move_to(UP * 2.8)
+        self.play(FadeIn(thanks, shift=DOWN * 0.3), run_time=0.7)  # t≈0.7
+
+        sub_ask = Text("If this helped — like, subscribe, and share.",
+                       font_size=22, color=AMBER)
+        sub_ask.next_to(thanks, DOWN, buff=0.28)
+        self.play(FadeIn(sub_ask), run_time=0.5)               # t≈1.2
+
+        divider = Line(LEFT * 5.5, RIGHT * 5.5, color=BLUE, stroke_width=1)
+        divider.next_to(sub_ask, DOWN, buff=0.35)
+        self.play(Create(divider), run_time=0.4)               # t≈1.6
+
+        # ── Adaptive testing pitch ──
+        pitch_title = heading("Want to actually pass the exam?", size=30, color=BLUE)
+        pitch_title.next_to(divider, DOWN, buff=0.38)
+        self.play(Write(pitch_title), run_time=0.8)            # t≈2.4
+
+        pitch_body = Text(
+            "Zero Day Labs uses adaptive testing that learns your weak spots\n"
+            "and drills you on exactly what you need — so you pass faster.",
+            font_size=20, color=WHITE, line_spacing=1.4
+        )
+        pitch_body.next_to(pitch_title, DOWN, buff=0.3)
+        self.play(FadeIn(pitch_body, shift=UP * 0.15), run_time=0.8)  # t≈3.2
+
+        # ── URL badge ──
+        url_bg = RoundedRectangle(corner_radius=0.22, width=5.4, height=0.72,
+                                  color=GREEN, fill_color="#051A0A",
+                                  fill_opacity=1, stroke_width=2)
+        url_text = Text("www.zerodaylabs.tech", font=MONO,
+                        font_size=24, color=GREEN, weight=BOLD)
+        url_group = VGroup(url_bg, url_text)
+        url_text.move_to(url_bg.get_center())
+        url_group.next_to(pitch_body, DOWN, buff=0.42)
+        self.play(FadeIn(url_group, scale=0.88), run_time=0.7) # t≈3.9
+        self.play(url_bg.animate.set_stroke(color=WHITE, width=2.5), run_time=0.4)
+        self.play(url_bg.animate.set_stroke(color=GREEN, width=2), run_time=0.4)
+        # subtle pulse ↑                                         t≈4.7
+
+        # ── Tagline footer ──
+        tagline = Text("Train.  Test.  Certify.",
+                       font_size=18, color=BLUE, weight=BOLD)
+        tagline.to_edge(DOWN, buff=0.35)
+        self.play(FadeIn(tagline), run_time=0.5)               # t≈5.2
+
+        elapsed = 5.2
+        self._pad("s9", elapsed)
 
         # Fade to black
         black = Rectangle(
             width=config.frame_width + 1,
             height=config.frame_height + 1,
-            fill_color=BLACK, fill_opacity=0, stroke_width=0
+            fill_color=BLACK, fill_opacity=0, stroke_width=0,
         )
         self.add(black)
-        self.play(black.animate.set_fill(opacity=1), run_time=1.6)
-        self.wait(0.5)
+        self.play(black.animate.set_fill(opacity=1), run_time=1.8)
+        self.wait(0.4)
