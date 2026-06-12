@@ -78,7 +78,7 @@ class MasterScene(Scene):
         self._sound("s0")                                   # t=0
 
         ASSETS = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
-        cover_path = os.path.join(ASSETS, "book_cover.jpg")
+        cover_path = os.path.join(ASSETS, "Think Like A CISSP Cover.jpg")
 
         # Sponsored label
         sponsor = Text("A MESSAGE FROM ZERO DAY LABS",
@@ -108,7 +108,7 @@ class MasterScene(Scene):
                                            color=GREEN, fill_color="#051A05",
                                            fill_opacity=0.9, stroke_width=2)
             placeholder.move_to(LEFT * 3.3 + DOWN * 0.2)
-            ph_txt = Text("book_cover.jpg\nnot found", font_size=16, color=GREEN)
+            ph_txt = Text("Think Like A CISSP Cover.jpg\nnot found", font_size=16, color=GREEN)
             ph_txt.move_to(placeholder.get_center())
             self.play(FadeIn(placeholder), Write(ph_txt), run_time=0.6)
             cover = placeholder
