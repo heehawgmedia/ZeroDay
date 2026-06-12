@@ -200,20 +200,64 @@ def generate_pico(key: str, text: str) -> str:
     return mp3
 
 
+def is_valid_mp3(path: str) -> bool:
+    """Return True only if the file exists and ffprobe can read a duration from it."""
+    if not os.path.exists(path) or os.path.getsize(path) < 1024:
+        return False
+    try:
+        dur = duration_of(path)
+        return dur > 0.5
+    except Exception:
+        return False
+
+
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--force", action="store_true",
+                        help="Regenerate all audio even if files already exist")
+    parser.add_argument("--only", nargs="+", metavar="KEY",
+                        help="Only generate these keys (e.g. --only s0 s9)")
+    args = parser.parse_args()
+
     engine = "ElevenLabs" if ELEVEN_API_KEY else "Pico (offline fallback)"
     print(f"Engine: {engine}")
 
-    durations = {}
-    for key, text in NARRATIONS.items():
-        if ELEVEN_API_KEY:
-            mp3 = generate_elevenlabs(key, text)
-        else:
-            mp3 = generate_pico(key, text)
-        durations[key] = round(duration_of(mp3), 2)
-        print(f"  {key}: {durations[key]:.1f}s → {mp3}")
-
+    # Load existing durations so we can preserve entries we skip
     dur_path = os.path.join(AUDIO_DIR, "durations.json")
+    durations: dict = {}
+    if os.path.exists(dur_path):
+        with open(dur_path) as f:
+            durations = json.load(f)
+
+    for key, text in NARRATIONS.items():
+        if args.only and key not in args.only:
+            print(f"  {key}: skipped (not in --only list)")
+            continue
+
+        mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+
+        if not args.force and is_valid_mp3(mp3):
+            print(f"  {key}: already exists ({durations.get(key, '?')}s) — skipping")
+            continue
+
+        try:
+            if ELEVEN_API_KEY:
+                mp3 = generate_elevenlabs(key, text)
+            else:
+                mp3 = generate_pico(key, text)
+            durations[key] = round(duration_of(mp3), 2)
+            print(f"  {key}: {durations[key]:.1f}s → {mp3}")
+        except Exception as e:
+            print(f"  {key}: FAILED — {e}")
+            print(f"         Falling back to Pico TTS...")
+            try:
+                mp3 = generate_pico(key, text)
+                durations[key] = round(duration_of(mp3), 2)
+                print(f"  {key}: {durations[key]:.1f}s → {mp3} (Pico fallback)")
+            except Exception as e2:
+                print(f"  {key}: Pico also failed — {e2}")
+
     with open(dur_path, "w") as f:
         json.dump(durations, f, indent=2)
 
