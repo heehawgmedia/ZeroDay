@@ -301,7 +301,7 @@ class ZeroTrustScene(Scene):
         self.play(
             FadeOut(moat), FadeOut(inner), FadeOut(trust_lbl),
             FadeOut(untrust), FadeOut(breakers), FadeOut(crack_line),
-            FadeOut(moat_gone), run_time=0.5
+            FadeOut(moat_gone), FadeOut(stitle), run_time=0.5
         )                                                                   # t≈16.3
 
         # Attack path: lateral movement
@@ -598,11 +598,11 @@ class ZeroTrustScene(Scene):
             y_offset = UP * (1.5 - reasons.index((title_str, body_str, color)) * 1.65)
             card_bg.move_to(y_offset + DOWN * 0.3)
             card_title = Text(title_str, font_size=19, color=color, weight=BOLD)
-            card_title.move_to(card_bg.get_left() + RIGHT * 2.5 + y_offset * 0.0)
+            card_title.move_to(card_bg.get_center() + UP * 0.35)
             card_title.align_to(card_bg.get_left(), LEFT).shift(RIGHT * 0.3)
             card_body = Text(body_str, font_size=14, color=WHITE, line_spacing=1.25)
-            card_body.align_to(card_bg.get_right(), RIGHT).shift(LEFT * 0.3)
-            card_body.move_to(card_bg.get_center())
+            card_body.move_to(card_bg.get_center() + DOWN * 0.18)
+            card_body.align_to(card_bg.get_left(), LEFT).shift(RIGHT * 0.3)
             reason_cards.append(VGroup(card_bg, card_title, card_body))
 
         for card in reason_cards:
@@ -656,10 +656,11 @@ class ZeroTrustScene(Scene):
                                        fill_opacity=0.95, stroke_width=2)
             card_bg.move_to(UP * (1.5 - cert_items.index((title_str, body_str, color)) * 1.7) + DOWN * 0.3)
             card_title = Text(title_str, font_size=18, color=color, weight=BOLD)
-            card_title.align_to(card_bg.get_left(), LEFT).shift(RIGHT * 0.3)
             card_title.move_to(card_bg.get_center() + UP * 0.3)
+            card_title.align_to(card_bg.get_left(), LEFT).shift(RIGHT * 0.3)
             card_body = Text(body_str, font_size=14, color=WHITE, line_spacing=1.25)
             card_body.move_to(card_bg.get_center() + DOWN * 0.25)
+            card_body.align_to(card_bg.get_left(), LEFT).shift(RIGHT * 0.3)
             cert_cards.append(VGroup(card_bg, card_title, card_body))
 
         for card in cert_cards:
