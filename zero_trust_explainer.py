@@ -53,6 +53,17 @@ def scene_title(scene, text, color=WHITE):
 #  ZERO TRUST SCENE  —  manim -qh zero_trust_explainer.py ZeroTrustScene
 # ═══════════════════════════════════════════════════════════════════
 class ZeroTrustScene(Scene):
+    _AUDIO_KEYS = ["s0", "s1", "s2", "s3", "s4", "s5", "s6", "s7"]
+
+    def setup(self):
+        missing = [k for k in self._AUDIO_KEYS
+                   if not os.path.isfile(os.path.join(AUDIO, f"{k}.mp3"))]
+        if missing:
+            raise FileNotFoundError(
+                f"Missing audio files: {', '.join(missing)}\n"
+                f"Run: python generate_zero_trust_narration.py"
+            )
+
     def construct(self):
         self.s0_ad()
         self.s1_hook()
@@ -106,7 +117,7 @@ class ZeroTrustScene(Scene):
 
     # ── Audio helpers ─────────────────────────────────────────────
     def _sound(self, key):
-        self.add_sound(f"{AUDIO}/{key}.mp3")
+        self.add_sound(os.path.join(AUDIO, f"{key}.mp3"), gain=1)
 
     def _pad(self, key, used_seconds):
         remaining = DUR[key] - used_seconds - 0.6
