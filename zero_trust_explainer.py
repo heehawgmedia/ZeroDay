@@ -94,7 +94,7 @@ class ZeroTrustScene(Scene):
             for (cx, cy), (dx, dy) in corners
         ])
         bg = VGroup(dots, brackets)
-        self.add_to_back(bg)
+        self.add(bg)
         return bg
 
     def _fade_content(self, bg: VGroup, run_time=0.6):
