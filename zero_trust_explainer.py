@@ -76,35 +76,84 @@ class ZeroTrustScene(Scene):
 
     # ── Background helper ─────────────────────────────────────────
     def _tech_bg(self) -> VGroup:
-        """Hex dot grid + corner brackets. Call first in each scene."""
-        rng = random.Random(73)
-        dots = VGroup(*[
-            Dot(
-                [
-                    -8.8 + c * 0.95 + (0.47 if r % 2 else 0),
-                    -4.0 + r * 0.68,
-                    0,
-                ],
-                radius=0.022, color=BLUE,
-            ).set_opacity(rng.uniform(0.03, 0.09))
-            for r in range(13) for c in range(20)
+        rng = random.Random(42)
+
+        # Dark base + subtle center glow for depth
+        base = Rectangle(
+            width=config.frame_width + 0.5, height=config.frame_height + 0.5,
+            fill_color="#04080F", fill_opacity=1, stroke_width=0,
+        )
+        glow = Ellipse(width=13, height=8.5,
+                       fill_color="#0A1830", fill_opacity=0.55, stroke_width=0)
+
+        # Faint horizontal grid lines
+        grid = VGroup(*[
+            Line(LEFT*8, RIGHT*8, stroke_width=0.45,
+                 color="#0D2040", stroke_opacity=1).shift(UP*y)
+            for y in [-3.0, -1.5, 0.0, 1.5, 3.0]
         ])
+
+        # PCB-style circuit traces in corners
+        _C = "#00C8FF"
+        trace_segs = [
+            ((-7.1, 2.8), (-5.2, 2.8)), ((-5.2, 2.8), (-5.2, 1.8)),
+            ((-6.1, 1.8), (-5.2, 1.8)),
+            ((7.1, 2.8),  (5.2, 2.8)),  ((5.2, 2.8),  (5.2, 1.8)),
+            ((5.2, 1.8),  (6.1, 1.8)),
+            ((-7.1, -2.8), (-5.5, -2.8)), ((-5.5, -2.8), (-5.5, -1.9)),
+            ((7.1, -2.8),  (5.5, -2.8)),  ((5.5, -2.8),  (5.5, -2.0)),
+            ((5.5, -2.0),  (6.3, -2.0)),
+        ]
+        traces = VGroup(*[
+            Line([s[0], s[1], 0], [e[0], e[1], 0],
+                 stroke_width=1.1, color=_C, stroke_opacity=0.20)
+            for s, e in trace_segs
+        ])
+        node_pts = [(-5.2, 1.8), (-6.1, 1.8), (5.2, 1.8), (6.1, 1.8),
+                    (-5.5, -1.9), (5.5, -2.0), (6.3, -2.0)]
+        nodes = VGroup(*[
+            Dot([x, y, 0], radius=0.045, color=_C).set_opacity(0.30)
+            for x, y in node_pts
+        ])
+
+        # Corner brackets (more visible, with corner dot)
         corners = [
-            ((-6.8,  3.6), ( 1, -1)),
-            (( 6.8,  3.6), (-1, -1)),
-            ((-6.8, -3.6), ( 1,  1)),
-            (( 6.8, -3.6), (-1,  1)),
+            ((-6.9, 3.6), (1, -1)), ((6.9, 3.6), (-1, -1)),
+            ((-6.9,-3.6), (1,  1)), ((6.9,-3.6), (-1,  1)),
         ]
         brackets = VGroup(*[
             VGroup(
-                Line([cx, cy, 0], [cx + dx*0.7, cy, 0],
-                     stroke_width=1.2, color=BLUE, stroke_opacity=0.18),
-                Line([cx, cy, 0], [cx, cy + dy*0.7, 0],
-                     stroke_width=1.2, color=BLUE, stroke_opacity=0.18),
+                Line([cx,cy,0],[cx+dx*1.05,cy,0],
+                     stroke_width=1.6, color=_C, stroke_opacity=0.32),
+                Line([cx,cy,0],[cx,cy+dy*1.05,0],
+                     stroke_width=1.6, color=_C, stroke_opacity=0.32),
+                Dot([cx, cy, 0], radius=0.04, color=_C).set_opacity(0.40),
             )
-            for (cx, cy), (dx, dy) in corners
+            for (cx,cy),(dx,dy) in corners
         ])
-        bg = VGroup(dots, brackets)
+
+        # Hex dot field — mostly blue, some purple for variety
+        _palette = [_C]*6 + ["#7744CC"]
+        hex_dots = VGroup()
+        for r in range(13):
+            for c in range(20):
+                if rng.random() < 0.72:
+                    x = -8.8 + c*0.95 + (0.47 if r%2 else 0)
+                    y = -4.0 + r*0.68
+                    col = _palette[rng.randint(0, len(_palette)-1)]
+                    hex_dots.add(
+                        Dot([x,y,0], radius=0.024, color=col)
+                        .set_opacity(rng.uniform(0.04, 0.13))
+                    )
+
+        # Side tick marks
+        ticks = VGroup()
+        for y_off in [-0.6, 0.0, 0.6]:
+            for xd, xr in [(-7.1, -6.8), (7.1, 6.8)]:
+                ticks.add(Line([xd, y_off, 0], [xr, y_off, 0],
+                               stroke_width=1.0, color=_C, stroke_opacity=0.22))
+
+        bg = VGroup(base, glow, grid, traces, nodes, brackets, hex_dots, ticks)
         self.add(bg)
         return bg
 
