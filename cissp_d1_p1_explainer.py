@@ -260,22 +260,26 @@ class CISSP_D1P1(Scene):
 
         all_canons = VGroup()
         for num, title, body, color in canon_data:
-            row_bg = RoundedRectangle(corner_radius=0.16, width=11.8, height=1.12,
+            row_bg = RoundedRectangle(corner_radius=0.16, width=11.8, height=1.0,
                                       color=color, fill_color=BG,
                                       fill_opacity=0.95, stroke_width=2)
-            num_circle = Circle(radius=0.32, color=color, fill_color=color,
+            num_circle = Circle(radius=0.30, color=color, fill_color=color,
                                 fill_opacity=1, stroke_width=0)
-            num_txt = Text(num, font_size=22, color=BG, weight=BOLD)
-            num_circle.move_to(row_bg.get_left() + RIGHT*0.55)
+            num_txt = Text(num, font_size=20, color=BG, weight=BOLD)
+            num_circle.move_to(row_bg.get_left() + RIGHT*0.52)
             num_txt.move_to(num_circle.get_center())
-            title_mob = Text(title, font_size=19, color=color, weight=BOLD)
-            title_mob.move_to(row_bg.get_left() + RIGHT*2.2)
-            body_mob = Text(body, font_size=14, color=WHITE, line_spacing=1.2)
-            body_mob.move_to(row_bg.get_right() + LEFT*3.5)
+            title_mob = Text(title, font_size=18, color=color, weight=BOLD)
+            # Left-align title starting after the circle so long titles don't overlap
+            title_mob.next_to(num_circle, RIGHT, buff=0.22)
+            title_mob.set_y(row_bg.get_center()[1])
+            body_mob = Text(body, font_size=13, color=WHITE, line_spacing=1.2,
+                            font="DejaVu Sans")
+            body_mob.move_to(row_bg.get_right() + LEFT*3.2)
+            body_mob.set_y(row_bg.get_center()[1])
             all_canons.add(VGroup(row_bg, num_circle, num_txt, title_mob, body_mob))
 
-        all_canons.arrange(DOWN, buff=0.18)
-        all_canons.move_to(DOWN * 0.3)
+        all_canons.arrange(DOWN, buff=0.15)
+        all_canons.move_to(DOWN * 0.2)
 
         elapsed = 1.0
         for i, canon in enumerate(all_canons):
