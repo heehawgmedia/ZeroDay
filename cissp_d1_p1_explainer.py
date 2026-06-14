@@ -3,6 +3,13 @@ import json
 import os
 import random
 
+# Ensure all Text() calls default to DejaVu Sans — prevents VPS monospace fallback
+import manim as _manim
+class Text(_manim.Text):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault('font', 'DejaVu Sans')
+        super().__init__(*args, **kwargs)
+
 # ─── Color Palette ───────────────────────────────────────────────
 BG    = "#0A0E1A"
 BLUE  = "#00C8FF"
@@ -52,20 +59,19 @@ def scene_title(scene, text, color=WHITE):
     scene.play(Write(t), Create(bar), run_time=0.6)
     return VGroup(t, bar)
 
-def exam_tip(scene, text, anchor=None, buff=0.3, width=10.0):
-    bg = RoundedRectangle(corner_radius=0.14, width=width, height=0.72,
-                          color=RED, fill_color="#1A0000",
-                          fill_opacity=1, stroke_width=2)
-    label = Text(f"EXAM TIP  |  {text}", font_size=17, color=WHITE, weight=BOLD)
-    label.move_to(bg.get_center())
-    badge = VGroup(bg, label)
+def exam_tip(scene, text, anchor=None, buff=0.3, **_):
+    prefix = Text("▶ EXAM TIP:", font_size=14, color=RED, weight=BOLD)
+    body   = Text(text, font_size=14, color=AMBER)
+    grp    = VGroup(prefix, body).arrange(RIGHT, buff=0.28)
+    uline  = Line(grp.get_left(), grp.get_right(),
+                  color=RED, stroke_width=1.0, stroke_opacity=0.5)
+    uline.next_to(grp, DOWN, buff=0.07)
+    badge = VGroup(grp, uline)
     if anchor:
         badge.next_to(anchor, DOWN, buff=buff)
     else:
-        badge.to_edge(DOWN, buff=0.32)
-    scene.play(FadeIn(badge, scale=0.88), run_time=0.5)
-    scene.play(bg.animate.set_stroke(color=WHITE, width=2.5), run_time=0.2)
-    scene.play(bg.animate.set_stroke(color=RED, width=2), run_time=0.2)
+        badge.to_edge(UP, buff=1.0)
+    scene.play(FadeIn(badge, shift=DOWN*0.1), run_time=0.5)
     return badge
 
 
@@ -405,23 +411,23 @@ class CISSP_D1P1(Scene):
             Text("DEFINITION", font_size=14, color=GRAY, weight=BOLD),
             Text("VIOLATED BY", font_size=14, color=GRAY, weight=BOLD),
         )
-        hdr[0].move_to(LEFT*5.5 + UP*2.55)
-        hdr[1].move_to(LEFT*1.2 + UP*2.55)
-        hdr[2].move_to(RIGHT*3.8 + UP*2.55)
+        hdr[0].move_to(LEFT*5.5 + UP*2.0)
+        hdr[1].move_to(LEFT*1.2 + UP*2.0)
+        hdr[2].move_to(RIGHT*3.8 + UP*2.0)
         hdr_line = Line(LEFT*6.8, RIGHT*6.8, color=GRAY, stroke_width=0.8, stroke_opacity=0.5)
-        hdr_line.move_to(UP*2.3)
+        hdr_line.move_to(UP*1.75)
         self.play(FadeIn(hdr), Create(hdr_line), run_time=0.5)
 
         elapsed = 1.1
         rows = []
         for i, (name, defn, violation, color) in enumerate(pillar_data):
-            y = 1.75 - i * 0.92
+            y = 1.2 - i * 0.92
             name_mob = Text(name, font_size=17, color=color, weight=BOLD)
             name_mob.move_to(LEFT*5.5 + UP*y)
             defn_mob = Text(defn, font_size=13, color=WHITE, line_spacing=1.1)
-            defn_mob.move_to(LEFT*0.8 + UP*y)
+            defn_mob.move_to(LEFT*1.2 + UP*y)
             viol_mob = Text(violation, font_size=13, color=GRAY, line_spacing=1.1)
-            viol_mob.move_to(RIGHT*4.0 + UP*y)
+            viol_mob.move_to(RIGHT*3.8 + UP*y)
             sep = Line(LEFT*6.8, RIGHT*6.8, stroke_width=0.4, color="#223344", stroke_opacity=0.5)
             sep.move_to(UP*(y - 0.45))
             row = VGroup(name_mob, defn_mob, viol_mob, sep)
@@ -432,8 +438,7 @@ class CISSP_D1P1(Scene):
         # elapsed ≈ 36.0
 
         tip = exam_tip(self,
-            "Authenticity = identity is genuine  |  Nonrepudiation = action cannot be denied later",
-            width=11.5)
+            "Authenticity = identity is genuine  |  Nonrepudiation = action cannot be denied later")
         elapsed += 0.9
         self.wait(5.0)
         elapsed += 5.0
@@ -459,23 +464,26 @@ class CISSP_D1P1(Scene):
         self.play(FadeIn(ceo_bg), Write(ceo_txt), run_time=0.7)            # t≈1.3
         self.wait(4.0)                                                     # t≈5.3
 
-        # Governance pyramid
+        # Governance pyramid — wider bars at each tier, labels flush to bar edges
         levels = [
-            ("Board of Directors",         "Sets risk appetite, ultimate accountability", BLUE,  UP*0.85,  10.0, 0.65),
-            ("Executive Leadership",        "Owns risk, approves security strategy",       GREEN, UP*0.0,   9.0, 1.1),
-            ("CISO / Security Team",        "Advises, implements, monitors, reports up",   AMBER, DOWN*0.85, 9.0, 1.55),
-            ("Operations / Custodians",     "Executes controls day to day",                GRAY,  DOWN*1.7,  8.0, 2.0),
+            ("Board of Directors",      "Sets risk appetite · holds accountability", BLUE,   7.5, 10.0),
+            ("Executive Leadership",    "Owns risk · approves security strategy",    GREEN,  9.5,  9.0),
+            ("CISO / Security Team",    "Advises · implements · monitors · reports", AMBER, 11.5,  9.0),
+            ("Operations / Custodians", "Executes controls day to day",              GRAY,  13.0,  8.0),
         ]
 
         elapsed = 5.3
-        for label, desc, color, ypos, dwell, width in levels:
-            bar = Rectangle(width=width*1.5, height=0.62,
+        for i, (label, desc, color, bar_w, dwell) in enumerate(levels):
+            cy = 0.98 - i * 0.77
+            bar = Rectangle(width=bar_w, height=0.65,
                             color=color, fill_color=BG, fill_opacity=0.9, stroke_width=2)
-            bar.move_to(ypos + RIGHT*0.0)
-            bar_label = Text(label, font_size=16, color=color, weight=BOLD)
-            bar_label.move_to(bar.get_left() + RIGHT*2.2)
-            bar_desc = Text(desc, font_size=13, color=WHITE)
-            bar_desc.move_to(bar.get_right() + LEFT*2.5)
+            bar.move_to([0, cy, 0])
+            bar_label = Text(label, font_size=14, color=color, weight=BOLD)
+            bar_label.next_to(bar.get_left(), RIGHT, buff=0.35)
+            bar_label.set_y(cy)
+            bar_desc = Text(desc, font_size=12, color=WHITE)
+            bar_desc.next_to(bar.get_right(), LEFT, buff=0.35)
+            bar_desc.set_y(cy)
             grp = VGroup(bar, bar_label, bar_desc)
             self.play(FadeIn(grp, shift=LEFT*0.2), run_time=0.5)
             self.wait(dwell)
