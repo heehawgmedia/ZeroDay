@@ -230,6 +230,8 @@ if __name__ == "__main__":
         with open(dur_path) as f:
             durations = json.load(f)
 
+    pico_fallbacks: list = []
+    failed_scenes: list = []
     for key, text in NARRATIONS.items():
         if args.only and key not in args.only:
             print(f"  {key}: skipped (not in --only list)")
@@ -249,14 +251,16 @@ if __name__ == "__main__":
             durations[key] = round(duration_of(mp3), 2)
             print(f"  {key}: {durations[key]:.1f}s → {mp3}")
         except Exception as e:
-            print(f"  {key}: FAILED — {e}")
-            print(f"         Falling back to Pico TTS...")
+            print(f"  {key}: ElevenLabs FAILED — {e}")
+            print(f"         Attempting Pico fallback...")
             try:
                 mp3 = generate_pico(key, text)
                 durations[key] = round(duration_of(mp3), 2)
-                print(f"  {key}: {durations[key]:.1f}s → {mp3} (Pico fallback)")
+                print(f"  {key}: {durations[key]:.1f}s → {mp3}  ⚠ PICO FALLBACK")
+                pico_fallbacks.append(key)
             except Exception as e2:
-                print(f"  {key}: Pico also failed — {e2}")
+                print(f"  {key}: Pico also failed — {e2}  ✗ SCENE MISSING")
+                failed_scenes.append(key)
 
     with open(dur_path, "w") as f:
         json.dump(durations, f, indent=2)
@@ -264,3 +268,21 @@ if __name__ == "__main__":
     total = sum(durations.values())
     print(f"\nWrote {dur_path}")
     print(f"Total narration: {total:.1f}s ({total/60:.1f} min)")
+
+    # ── Quality gate ─────────────────────────────────────────────
+    if pico_fallbacks or failed_scenes:
+        print("\n" + "="*60)
+        print("  AUDIO QUALITY GATE — DO NOT RENDER")
+        print("="*60)
+        if pico_fallbacks:
+            keys = " ".join(pico_fallbacks)
+            print(f"\n  ⚠  ROBOT VOICE (Pico) used for: {keys}")
+            print(f"     Fix: python generate_narration.py --force --only {keys}")
+        if failed_scenes:
+            keys = " ".join(failed_scenes)
+            print(f"\n  ✗  GENERATION FAILED for: {keys}")
+            print(f"     Fix: python generate_narration.py --force --only {keys}")
+        print("\n  Resolve the above before running manim.\n")
+        raise SystemExit(1)
+    else:
+        print("\n✓ All scenes generated with ElevenLabs — safe to render.")
