@@ -67,10 +67,18 @@ class MFAScene(Scene):
 
     # ── helpers ──────────────────────────────────────────────────
     def _sound(self, key):
+        try:
+            self._scene_start = self.time
+        except AttributeError:
+            self._scene_start = 0.0
         self.add_sound(f"{AUDIO}/{key}.mp3")
 
-    def _pad(self, key, used_seconds):
-        remaining = DUR[key] - used_seconds - 0.6
+    def _pad(self, key, used=0):
+        try:
+            scene_elapsed = self.time - getattr(self, '_scene_start', 0.0)
+        except AttributeError:
+            scene_elapsed = used
+        remaining = DUR[key] - scene_elapsed - 0.3
         if remaining > 0:
             self.wait(remaining)
 

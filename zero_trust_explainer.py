@@ -166,10 +166,18 @@ class ZeroTrustScene(Scene):
 
     # ── Audio helpers ─────────────────────────────────────────────
     def _sound(self, key):
+        try:
+            self._scene_start = self.time
+        except AttributeError:
+            self._scene_start = 0.0
         self.add_sound(os.path.join(AUDIO, f"{key}.mp3"), gain=1)
 
-    def _pad(self, key, used_seconds):
-        remaining = DUR[key] - used_seconds - 0.6
+    def _pad(self, key, used=0):
+        try:
+            scene_elapsed = self.time - getattr(self, '_scene_start', 0.0)
+        except AttributeError:
+            scene_elapsed = used
+        remaining = DUR[key] - scene_elapsed - 0.3
         if remaining > 0:
             self.wait(remaining)
 
