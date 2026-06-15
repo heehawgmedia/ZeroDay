@@ -183,10 +183,18 @@ class CISSP_D1P1(Scene):
         self.remove(bg)
 
     def _sound(self, key):
+        try:
+            self._scene_start = self.time
+        except AttributeError:
+            self._scene_start = 0.0
         self.add_sound(f"{AUDIO}/{key}.mp3")
 
-    def _pad(self, key, used):
-        remaining = DUR[key] - used - 0.5
+    def _pad(self, key, used=0):
+        try:
+            scene_elapsed = self.time - getattr(self, '_scene_start', 0.0)
+        except AttributeError:
+            scene_elapsed = used
+        remaining = DUR[key] - scene_elapsed - 0.3
         if remaining > 0:
             self.wait(remaining)
 
@@ -249,6 +257,13 @@ class CISSP_D1P1(Scene):
     # ── SCENE 1 — Hook + Roadmap ─────────────────────────────────
     def s1_hook_roadmap(self):
         bg = self._tech_bg()
+
+        welcome = Text("Welcome back to Zero Day Labs!", font_size=38, color=BLUE, weight=BOLD)
+        welcome.move_to(ORIGIN)
+        self.play(Write(welcome), run_time=0.8)
+        self.wait(1.5)
+        self.play(FadeOut(welcome), run_time=0.5)
+
         self._sound("s1")
 
         # Cold open: single question
