@@ -391,20 +391,20 @@ class CISSP_D2(Scene):
 
         cols = VGroup()
         for title_str, body, color in areas:
-            col_bg = RoundedRectangle(corner_radius=0.18, width=5.8, height=2.4,
+            col_bg = RoundedRectangle(corner_radius=0.18, width=3.1, height=2.6,
                                       color=color, fill_color=BG,
                                       fill_opacity=0.94, stroke_width=2)
-            col_title = Text(title_str, font_size=15, color=color, weight=BOLD)
-            col_title.move_to(col_bg.get_top() + DOWN*0.3)
-            sep = Line(LEFT*2.5, RIGHT*2.5, color=color,
+            col_title = Text(title_str, font_size=14, color=color, weight=BOLD)
+            col_title.move_to(col_bg.get_top() + DOWN*0.32)
+            sep = Line(LEFT*1.35, RIGHT*1.35, color=color,
                        stroke_width=0.7, stroke_opacity=0.5)
-            sep.next_to(col_title, DOWN, buff=0.1)
-            col_body = Text(body, font_size=12, color=WHITE, line_spacing=1.3)
-            col_body.move_to(col_bg.get_center() + DOWN*0.2)
+            sep.next_to(col_title, DOWN, buff=0.12)
+            col_body = Text(body, font_size=11, color=WHITE, line_spacing=1.3)
+            col_body.next_to(sep, DOWN, buff=0.18)
             cols.add(VGroup(col_bg, col_title, sep, col_body))
 
-        cols.arrange(RIGHT, buff=0.35)
-        cols.move_to(UP*0.4)
+        cols.arrange(RIGHT, buff=0.28)
+        cols.move_to(UP*0.3)
         self.play(FadeIn(cols, lag_ratio=0.2, scale=0.93), run_time=0.9)
         self.wait(12.0)
 
@@ -447,9 +447,9 @@ class CISSP_D2(Scene):
             ("DESTROY /\nDISPOSE", "Sanitize to match classification level.\nMethod must be documented.",                     "#AA44FF"),
         ]
 
-        all_phases = VGroup()
+        cards = []
         for i, (phase, desc, color) in enumerate(phases):
-            ph_bg = RoundedRectangle(corner_radius=0.14, width=3.8, height=1.95,
+            ph_bg = RoundedRectangle(corner_radius=0.14, width=4.1, height=2.05,
                                      color=color, fill_color=BG,
                                      fill_opacity=0.92, stroke_width=1.8)
             ph_num = Circle(radius=0.22, color=color,
@@ -459,13 +459,15 @@ class CISSP_D2(Scene):
             num_txt.move_to(ph_num.get_center())
             ph_label = Text(phase, font_size=13, color=color,
                             weight=BOLD, line_spacing=1.1)
-            ph_label.next_to(ph_num, DOWN, buff=0.1)
-            ph_desc = Text(desc, font_size=11, color=WHITE, line_spacing=1.2)
-            ph_desc.move_to(ph_bg.get_bottom() + UP*0.42)
-            all_phases.add(VGroup(ph_bg, ph_num, num_txt, ph_label, ph_desc))
+            ph_label.next_to(ph_num, DOWN, buff=0.08)
+            ph_desc = Text(desc, font_size=10, color=WHITE, line_spacing=1.2)
+            ph_desc.move_to(ph_bg.get_bottom() + UP*0.44)
+            cards.append(VGroup(ph_bg, ph_num, num_txt, ph_label, ph_desc))
 
-        all_phases.arrange(RIGHT, buff=0.22)
-        all_phases.move_to(DOWN*0.12)
+        row1 = VGroup(*cards[:3]).arrange(RIGHT, buff=0.28)
+        row2 = VGroup(*cards[3:]).arrange(RIGHT, buff=0.28)
+        all_phases = VGroup(row1, row2).arrange(DOWN, buff=0.25)
+        all_phases.move_to(DOWN*0.22)
         self.play(FadeIn(all_phases, lag_ratio=0.12, scale=0.93), run_time=1.0)
         self.wait(16.0)
 
