@@ -867,8 +867,19 @@ class CISSP_D1P3(Scene):
             ),
         ]
 
+        # Visual dwell times tuned to the s10 narration (~3.3 wps). The narrator
+        # reads each full scenario aloud (~9-15s) BEFORE giving the answer, so
+        # the answer card must not appear until the narrated question finishes.
+        # (stem_dwell, answer_dwell) per question — keep in sync with the s10
+        # text in generate_cissp_d1_p3_narration.py.
+        q_timing = [
+            (13.2, 11.3),   # Q1: ~14.8s stem read, ~11.8s answer
+            (11.6,  3.1),   # Q2: ~13.0s stem read, ~3.6s answer
+            ( 8.0,  6.8),   # Q3: ~9.4s stem read,  ~7.3s answer
+        ]
+
         elapsed = 0.6
-        for stem, a, b, c, answer in questions:
+        for (stem, a, b, c, answer), (stem_dwell, ans_dwell) in zip(questions, q_timing):
             q_bg = RoundedRectangle(corner_radius=0.16, width=13.0, height=1.65,
                                      color=BLUE, fill_color="#00101A",
                                      fill_opacity=1, stroke_width=1.5)
@@ -885,8 +896,8 @@ class CISSP_D1P3(Scene):
 
             self.play(FadeIn(q_bg), Write(q_txt), run_time=0.6)
             self.play(FadeIn(choices), run_time=0.4)
-            self.wait(5.0)
-            elapsed += 6.0
+            self.wait(stem_dwell)
+            elapsed += 1.0 + stem_dwell
 
             ans_bg = RoundedRectangle(corner_radius=0.14, width=12.5, height=0.62,
                                        color=GREEN, fill_color="#051A0A",
@@ -895,8 +906,8 @@ class CISSP_D1P3(Scene):
             ans_txt = Text(answer, font_size=14, color=WHITE, weight=BOLD)
             ans_txt.move_to(ans_bg.get_center())
             self.play(FadeIn(ans_bg), Write(ans_txt), run_time=0.5)
-            self.wait(5.5)
-            elapsed += 6.0
+            self.wait(ans_dwell)
+            elapsed += 0.5 + ans_dwell
 
             self.play(FadeOut(q_bg), FadeOut(q_txt), FadeOut(choices),
                       FadeOut(ans_bg), FadeOut(ans_txt), run_time=0.4)
