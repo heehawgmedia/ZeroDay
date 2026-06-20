@@ -2,6 +2,7 @@ from manim import *
 import json
 import os
 import random
+import subprocess
 
 # Ensure all Text() calls default to DejaVu Sans — prevents VPS monospace fallback
 import manim as _manim
@@ -75,20 +76,41 @@ def exam_tip(scene, text, anchor=None, buff=0.3, **_):
     return badge
 
 
+def _ffprobe_seconds(path: str) -> float:
+    out = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", path],
+        capture_output=True, text=True,
+    )
+    return float(out.stdout.strip())
+
+
 def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
-    """Fail loudly before rendering if any audio file is missing or too small."""
-    missing = []
+    """Fail loudly before rendering if any audio file is missing, too small,
+    or shorter than its recorded duration (truncated / dropped-out audio)."""
+    bad = []
     for key in dur:
         path = os.path.join(audio_dir, f"{key}.mp3")
         if not os.path.exists(path) or os.path.getsize(path) < 1024:
-            missing.append(key)
-    if missing:
-        keys = " ".join(missing)
+            bad.append(key)
+            continue
+        # Catch truncated audio: file on disk is materially shorter than the
+        # duration recorded at generation time (the "volume drops out" bug).
+        try:
+            actual   = _ffprobe_seconds(path)
+            expected = float(dur.get(key, 0))
+        except Exception:
+            bad.append(key)
+            continue
+        if expected and actual < expected - 2.0:
+            bad.append(key)
+    if bad:
+        keys = " ".join(bad)
         raise RuntimeError(
             f"\n{'='*60}\n"
-            f"  MISSING AUDIO — DO NOT RENDER\n"
+            f"  MISSING / TRUNCATED AUDIO — DO NOT RENDER\n"
             f"{'='*60}\n"
-            f"  Files missing or invalid: {keys}\n"
+            f"  Files missing, invalid, or truncated: {keys}\n"
             f"  Fix: python {generator} --force --only {keys}\n"
             f"{'='*60}\n"
         )
