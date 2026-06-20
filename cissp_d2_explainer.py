@@ -75,11 +75,31 @@ def exam_tip(scene, text, anchor=None, buff=0.3, **_):
     return badge
 
 
+def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
+    """Fail loudly before rendering if any audio file is missing or too small."""
+    missing = []
+    for key in dur:
+        path = os.path.join(audio_dir, f"{key}.mp3")
+        if not os.path.exists(path) or os.path.getsize(path) < 1024:
+            missing.append(key)
+    if missing:
+        keys = " ".join(missing)
+        raise RuntimeError(
+            f"\n{'='*60}\n"
+            f"  MISSING AUDIO — DO NOT RENDER\n"
+            f"{'='*60}\n"
+            f"  Files missing or invalid: {keys}\n"
+            f"  Fix: python {generator} --force --only {keys}\n"
+            f"{'='*60}\n"
+        )
+
+
 # ═══════════════════════════════════════════════════════════════════
 #  CISSP D2  —  manim -qh cissp_d2_explainer.py CISSP_D2
 # ═══════════════════════════════════════════════════════════════════
 class CISSP_D2(Scene):
     def construct(self):
+        _preflight_audio(AUDIO, DUR, "generate_cissp_d2_narration.py")
         self.s0_hook_roadmap()
         self.s1_classification()
         self.s2_ownership_roles()
@@ -389,44 +409,34 @@ class CISSP_D2(Scene):
             ("TRANSMISSION",  "Confidential data over public/untrusted networks requires encryption.\nProtection level matches classification.",       RED),
         ]
 
-        cols = VGroup()
+        all_rows = VGroup()
         for title_str, body, color in areas:
-            col_bg = RoundedRectangle(corner_radius=0.18, width=3.1, height=2.6,
+            row_bg = RoundedRectangle(corner_radius=0.12, width=13.0, height=1.1,
                                       color=color, fill_color=BG,
-                                      fill_opacity=0.94, stroke_width=2)
-            col_title = Text(title_str, font_size=14, color=color, weight=BOLD)
-            col_title.move_to(col_bg.get_top() + DOWN*0.32)
-            sep = Line(LEFT*1.35, RIGHT*1.35, color=color,
-                       stroke_width=0.7, stroke_opacity=0.5)
-            sep.next_to(col_title, DOWN, buff=0.12)
-            col_body = Text(body, font_size=11, color=WHITE, line_spacing=1.3)
-            col_body.next_to(sep, DOWN, buff=0.18)
-            cols.add(VGroup(col_bg, col_title, sep, col_body))
+                                      fill_opacity=0.92, stroke_width=1.8)
+            label_mob = Text(title_str, font_size=14, color=color, weight=BOLD)
+            label_mob.next_to(row_bg.get_left(), RIGHT, buff=0.35)
+            label_mob.set_y(row_bg.get_center()[1])
+            desc_mob = Text(body, font_size=12, color=WHITE, line_spacing=1.2)
+            desc_mob.move_to(row_bg.get_center() + RIGHT*1.5)
+            desc_mob.set_y(row_bg.get_center()[1])
+            all_rows.add(VGroup(row_bg, label_mob, desc_mob))
 
-        cols.arrange(RIGHT, buff=0.28)
-        cols.move_to(UP*0.3)
-        self.play(FadeIn(cols, lag_ratio=0.2, scale=0.93), run_time=0.9)
-        self.wait(12.0)
+        all_rows.arrange(DOWN, buff=0.14)
+        all_rows.move_to(DOWN*0.2)
 
-        ntk_bg = RoundedRectangle(corner_radius=0.14, width=13.0, height=0.80,
-                                   color=AMBER, fill_color="#1A0D00",
-                                   fill_opacity=1, stroke_width=2)
-        ntk_bg.to_edge(DOWN, buff=0.28)
-        ntk_txt = Text(
-            "Need-to-Know: clearance level is necessary but NOT sufficient — "
-            "a specific business need is also required.",
-            font_size=15, color=WHITE, weight=BOLD
-        )
-        ntk_txt.move_to(ntk_bg.get_center())
-        self.play(FadeIn(ntk_bg), Write(ntk_txt), run_time=0.6)
-        self.wait(6.0)
-        elapsed = 20.5
+        elapsed = 0.6
+        dwells = [10.0, 9.0, 9.5, 9.5]
+        for row, dwell in zip(all_rows, dwells):
+            self.play(FadeIn(row, shift=RIGHT*0.15), run_time=0.4)
+            self.wait(dwell)
+            elapsed += 0.4 + dwell
 
         tip = exam_tip(self,
             "Need-to-Know: clearance + business need — both required, neither alone is enough")
         elapsed += 0.5
-        self.wait(4.0)
-        elapsed += 4.0
+        self.wait(5.0)
+        elapsed += 5.0
 
         self._pad("s3", elapsed)
         self._fade_content(bg)

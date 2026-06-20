@@ -75,11 +75,31 @@ def exam_tip(scene, text, anchor=None, buff=0.3, **_):
     return badge
 
 
+def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
+    """Fail loudly before rendering if any audio file is missing or too small."""
+    missing = []
+    for key in dur:
+        path = os.path.join(audio_dir, f"{key}.mp3")
+        if not os.path.exists(path) or os.path.getsize(path) < 1024:
+            missing.append(key)
+    if missing:
+        keys = " ".join(missing)
+        raise RuntimeError(
+            f"\n{'='*60}\n"
+            f"  MISSING AUDIO — DO NOT RENDER\n"
+            f"{'='*60}\n"
+            f"  Files missing or invalid: {keys}\n"
+            f"  Fix: python {generator} --force --only {keys}\n"
+            f"{'='*60}\n"
+        )
+
+
 # ═══════════════════════════════════════════════════════════════════
 #  CISSP D1-P1 SCENE  —  manim -qh cissp_d1_p1_explainer.py CISSPS_D1P1
 # ═══════════════════════════════════════════════════════════════════
 class CISSP_D1P1(Scene):
     def construct(self):
+        _preflight_audio(AUDIO, DUR, "generate_cissp_d1_p1_narration.py")
         self.s0_ad()
         self.s1_hook_roadmap()
         self.s2_ethics()
