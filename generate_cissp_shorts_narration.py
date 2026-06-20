@@ -14,7 +14,7 @@ Usage:
   python generate_cissp_shorts_narration.py --force
   python generate_cissp_shorts_narration.py --only c1_h c2_m
 """
-import json, os, subprocess, argparse
+import json, os, re, subprocess, argparse
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 AUDIO_DIR = os.path.join(BASE_DIR, "cissp_shorts_audio")
@@ -160,20 +160,96 @@ def is_valid_mp3(path: str) -> bool:
         return False
 
 
-def generate_elevenlabs(key: str, text: str) -> str:
-    from elevenlabs.client import ElevenLabs
-    client = ElevenLabs(api_key=ELEVEN_API_KEY)
-    mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+WORDS_PER_SEC    = 3.0
+CHUNK_CHAR_LIMIT = 700
+
+
+def _split_sentences(text: str) -> list:
+    parts = re.split(r"(?<=[.!?])\s+", text.strip())
+    return [p for p in parts if p]
+
+
+def _chunk_text(text: str, limit: int = CHUNK_CHAR_LIMIT) -> list:
+    chunks, cur = [], ""
+    for sent in _split_sentences(text):
+        if cur and len(cur) + 1 + len(sent) > limit:
+            chunks.append(cur)
+            cur = sent
+        else:
+            cur = f"{cur} {sent}".strip()
+    if cur:
+        chunks.append(cur)
+    return chunks or [text.strip()]
+
+
+def _expected_seconds(text: str) -> float:
+    return max(1.0, len(text.split()) / WORDS_PER_SEC)
+
+
+def _tts_one(client, text: str, path: str) -> None:
     audio = client.text_to_speech.convert(
         voice_id=ELEVEN_VOICE_ID,
         model_id=ELEVEN_MODEL,
         text=text,
         output_format="mp3_44100_128",
     )
-    with open(mp3, "wb") as f:
+    with open(path, "wb") as f:
         for chunk in audio:
             f.write(chunk)
-    return mp3
+
+
+def generate_elevenlabs(key: str, text: str) -> str:
+    from elevenlabs.client import ElevenLabs
+    client = ElevenLabs(api_key=ELEVEN_API_KEY)
+    mp3    = os.path.join(AUDIO_DIR, f"{key}.mp3")
+    chunks = _chunk_text(text)
+    parts  = []
+    for f in os.listdir(AUDIO_DIR):
+        if f.startswith(f".{key}_"):
+            try:
+                os.remove(os.path.join(AUDIO_DIR, f))
+            except OSError:
+                pass
+    try:
+        for i, ch in enumerate(chunks):
+            part = os.path.join(AUDIO_DIR, f".{key}_part{i}.mp3")
+            _tts_one(client, ch, part)
+            got, exp = duration_of(part), _expected_seconds(ch)
+            if got < 0.35 * exp:
+                raise RuntimeError(
+                    f"chunk {i+1}/{len(chunks)} truncated — "
+                    f"{got:.1f}s audio for ~{exp:.1f}s of text"
+                )
+            parts.append(part)
+
+        if len(parts) == 1:
+            os.replace(parts[0], mp3)
+        else:
+            listf = os.path.join(AUDIO_DIR, f".{key}_list.txt")
+            with open(listf, "w") as f:
+                for p in parts:
+                    f.write(f"file '{os.path.basename(p)}'\n")
+            subprocess.run(
+                ["ffmpeg", "-y", "-f", "concat", "-safe", "0",
+                 "-i", os.path.basename(listf),
+                 "-c:a", "libmp3lame", "-q:a", "2", os.path.basename(mp3)],
+                check=True, capture_output=True, cwd=AUDIO_DIR,
+            )
+            os.remove(listf)
+
+        total, exp_total = duration_of(mp3), _expected_seconds(text)
+        if total < 0.40 * exp_total:
+            raise RuntimeError(
+                f"final audio truncated — {total:.1f}s for ~{exp_total:.1f}s of text"
+            )
+        return mp3
+    finally:
+        for p in parts:
+            if os.path.exists(p):
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
 
 
 def generate_pico(key: str, text: str) -> str:
