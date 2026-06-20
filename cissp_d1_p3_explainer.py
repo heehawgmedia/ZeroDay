@@ -85,24 +85,27 @@ def _ffprobe_seconds(path: str) -> float:
     return float(out.stdout.strip())
 
 
-def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
-    """Fail loudly before rendering if any audio file is missing, too small,
-    or shorter than its recorded duration (truncated / dropped-out audio)."""
+def _preflight_audio(audio_dir: str, defaults: dict, generator: str) -> None:
+    """Fail loudly before rendering if any audio is missing or suspiciously short.
+
+    `defaults` must be the hardcoded _DUR_DEFAULTS dict (conservative estimates),
+    NOT the runtime DUR loaded from durations.json — comparing actual vs measured
+    is circular and misses ElevenLabs stream truncation.
+    """
     bad = []
-    for key in dur:
+    for key in defaults:
         path = os.path.join(audio_dir, f"{key}.mp3")
         if not os.path.exists(path) or os.path.getsize(path) < 1024:
             bad.append(key)
             continue
-        # Catch truncated audio: file on disk is materially shorter than the
-        # duration recorded at generation time (the "volume drops out" bug).
         try:
-            actual   = _ffprobe_seconds(path)
-            expected = float(dur.get(key, 0))
+            actual = _ffprobe_seconds(path)
+            # 60% of the conservative default is a safe floor:
+            # fast voices (~4 wps) produce audio at ~70-80% of the 2.4-wps default,
+            # so genuine truncation at <50% is caught while fast speech passes.
+            if actual < defaults[key] * 0.60:
+                bad.append(key)
         except Exception:
-            bad.append(key)
-            continue
-        if expected and actual < expected - 2.0:
             bad.append(key)
     if bad:
         keys = " ".join(bad)
@@ -121,7 +124,7 @@ def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
 # ═══════════════════════════════════════════════════════════════════
 class CISSP_D1P3(Scene):
     def construct(self):
-        _preflight_audio(AUDIO, DUR, "generate_cissp_d1_p3_narration.py")
+        _preflight_audio(AUDIO, _DUR_DEFAULTS, "generate_cissp_d1_p3_narration.py")
         self.s0_ad()
         self.s1_hook_roadmap()
         self.s2_bcp_vs_drp()

@@ -2,6 +2,7 @@ from manim import *
 import json
 import os
 import random
+import subprocess
 
 # Ensure all Text() calls default to DejaVu Sans — prevents VPS monospace fallback
 import manim as _manim
@@ -75,20 +76,44 @@ def exam_tip(scene, text, anchor=None, buff=0.3, **_):
     return badge
 
 
-def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
-    """Fail loudly before rendering if any audio file is missing or too small."""
-    missing = []
-    for key in dur:
+def _ffprobe_seconds(path: str) -> float:
+    out = subprocess.run(
+        ["ffprobe", "-v", "quiet", "-show_entries", "format=duration",
+         "-of", "default=noprint_wrappers=1:nokey=1", path],
+        capture_output=True, text=True,
+    )
+    return float(out.stdout.strip())
+
+
+def _preflight_audio(audio_dir: str, defaults: dict, generator: str) -> None:
+    """Fail loudly before rendering if any audio is missing or suspiciously short.
+
+    `defaults` must be the hardcoded _DUR_DEFAULTS dict (conservative estimates),
+    NOT the runtime DUR loaded from durations.json — comparing actual vs measured
+    is circular and misses ElevenLabs stream truncation.
+    """
+    bad = []
+    for key in defaults:
         path = os.path.join(audio_dir, f"{key}.mp3")
         if not os.path.exists(path) or os.path.getsize(path) < 1024:
-            missing.append(key)
-    if missing:
-        keys = " ".join(missing)
+            bad.append(key)
+            continue
+        try:
+            actual = _ffprobe_seconds(path)
+            # 60% of the conservative default is a safe floor:
+            # fast voices (~4 wps) produce audio at ~70-80% of the 2.4-wps default,
+            # so genuine truncation at <50% is caught while fast speech passes.
+            if actual < defaults[key] * 0.60:
+                bad.append(key)
+        except Exception:
+            bad.append(key)
+    if bad:
+        keys = " ".join(bad)
         raise RuntimeError(
             f"\n{'='*60}\n"
-            f"  MISSING AUDIO — DO NOT RENDER\n"
+            f"  MISSING / TRUNCATED AUDIO — DO NOT RENDER\n"
             f"{'='*60}\n"
-            f"  Files missing or invalid: {keys}\n"
+            f"  Files missing, too small, or too short: {keys}\n"
             f"  Fix: python {generator} --force --only {keys}\n"
             f"{'='*60}\n"
         )
@@ -99,7 +124,7 @@ def _preflight_audio(audio_dir: str, dur: dict, generator: str) -> None:
 # ═══════════════════════════════════════════════════════════════════
 class CISSP_D1P1(Scene):
     def construct(self):
-        _preflight_audio(AUDIO, DUR, "generate_cissp_d1_p1_narration.py")
+        _preflight_audio(AUDIO, _DUR_DEFAULTS, "generate_cissp_d1_p1_narration.py")
         self.s0_ad()
         self.s1_hook_roadmap()
         self.s2_ethics()
