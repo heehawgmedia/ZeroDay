@@ -260,8 +260,16 @@ def is_valid_mp3(path: str) -> bool:
         return False
 
 
-WORDS_PER_SEC    = 3.0
-CHUNK_CHAR_LIMIT = 700
+# Measured speech rate for these voices: ~3.3 words/sec on long passages.
+# Using the measured rate so the truncation guard fires on genuinely short
+# audio, not on fast speech.
+WORDS_PER_SEC    = 3.3
+CHUNK_CHAR_LIMIT = 240   # SMALL chunks: ElevenLabs truncation isolates to one
+                         # short chunk that is easy to detect and cheap to retry
+CHUNK_MIN_RATIO  = 0.55  # a chunk under this * expected is treated as truncated
+FINAL_MIN_RATIO  = 0.70  # whole-scene floor after concatenation
+MAX_TTS_RETRIES  = 4     # re-fetch a short chunk before giving up (truncation
+                         # is intermittent — a retry almost always succeeds)
 
 
 def _split_sentences(text: str) -> list:
@@ -270,6 +278,7 @@ def _split_sentences(text: str) -> list:
 
 
 def _chunk_text(text: str, limit: int = CHUNK_CHAR_LIMIT) -> list:
+    """Group sentences into chunks no longer than `limit` characters."""
     chunks, cur = [], ""
     for sent in _split_sentences(text):
         if cur and len(cur) + 1 + len(sent) > limit:
@@ -298,7 +307,39 @@ def _tts_one(client, text: str, path: str) -> None:
             f.write(chunk)
 
 
+def _tts_chunk_with_retry(client, text: str, path: str, label: str) -> float:
+    """Synthesize one chunk, retrying if ElevenLabs returns truncated audio.
+
+    Returns the final duration in seconds. Raises if every attempt is short —
+    that propagates to the Pico fallback and the quality gate so a bad scene is
+    never silently rendered.
+    """
+    exp  = _expected_seconds(text)
+    best = -1.0
+    for attempt in range(1, MAX_TTS_RETRIES + 1):
+        _tts_one(client, text, path)
+        got = duration_of(path)
+        if got >= CHUNK_MIN_RATIO * exp:
+            return got
+        best = max(best, got)
+        print(f"      {label}: got {got:.1f}s, expected ~{exp:.1f}s "
+              f"(retry {attempt}/{MAX_TTS_RETRIES})")
+    raise RuntimeError(
+        f"{label} truncated after {MAX_TTS_RETRIES} retries — "
+        f"best {best:.1f}s for ~{exp:.1f}s of text"
+    )
+
+
 def generate_elevenlabs(key: str, text: str) -> str:
+    """Per-sentence chunked TTS with per-chunk retry and a final length guard.
+
+    Each scene is split into small (<=CHUNK_CHAR_LIMIT char) chunks. Each chunk
+    is synthesized and duration-checked; a short chunk is re-fetched up to
+    MAX_TTS_RETRIES times. Chunks are then concatenated. Because the chunks are
+    small, ElevenLabs stream truncation shows up as one obviously-short chunk
+    rather than a whole scene that is mildly short — which the old coarse
+    guards could not distinguish from natural speech-rate variance.
+    """
     from elevenlabs.client import ElevenLabs
     client = ElevenLabs(api_key=ELEVEN_API_KEY)
     mp3    = os.path.join(AUDIO_DIR, f"{key}.mp3")
@@ -313,13 +354,7 @@ def generate_elevenlabs(key: str, text: str) -> str:
     try:
         for i, ch in enumerate(chunks):
             part = os.path.join(AUDIO_DIR, f".{key}_part{i}.mp3")
-            _tts_one(client, ch, part)
-            got, exp = duration_of(part), _expected_seconds(ch)
-            if got < 0.35 * exp:
-                raise RuntimeError(
-                    f"chunk {i+1}/{len(chunks)} truncated — "
-                    f"{got:.1f}s audio for ~{exp:.1f}s of text"
-                )
+            _tts_chunk_with_retry(client, ch, part, f"{key} chunk {i+1}/{len(chunks)}")
             parts.append(part)
 
         if len(parts) == 1:
@@ -338,7 +373,7 @@ def generate_elevenlabs(key: str, text: str) -> str:
             os.remove(listf)
 
         total, exp_total = duration_of(mp3), _expected_seconds(text)
-        if total < 0.40 * exp_total:
+        if total < FINAL_MIN_RATIO * exp_total:
             raise RuntimeError(
                 f"final audio truncated — {total:.1f}s for ~{exp_total:.1f}s of text"
             )
