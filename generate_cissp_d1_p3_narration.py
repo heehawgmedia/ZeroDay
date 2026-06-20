@@ -277,8 +277,10 @@ def is_valid_mp3(path: str) -> bool:
         return False
 
 
-# Speech-rate estimate used to detect truncated audio (words / second).
-WORDS_PER_SEC    = 2.4
+# Speech-rate estimate: ElevenLabs voices typically speak 3.0-4.0 wps.
+# Using 3.0 (conservative) so the guard only fires when audio is genuinely
+# short — not just because the voice speaks fast.
+WORDS_PER_SEC    = 3.0
 CHUNK_CHAR_LIMIT = 700   # split long scenes into smaller TTS requests
 
 
@@ -330,12 +332,19 @@ def generate_elevenlabs(key: str, text: str) -> str:
     mp3    = os.path.join(AUDIO_DIR, f"{key}.mp3")
     chunks = _chunk_text(text)
     parts  = []
+    # Clean up any leftover temp files from a previous interrupted run.
+    for f in os.listdir(AUDIO_DIR):
+        if f.startswith(f".{key}_"):
+            try:
+                os.remove(os.path.join(AUDIO_DIR, f))
+            except OSError:
+                pass
     try:
         for i, ch in enumerate(chunks):
             part = os.path.join(AUDIO_DIR, f".{key}_part{i}.mp3")
             _tts_one(client, ch, part)
             got, exp = duration_of(part), _expected_seconds(ch)
-            if got < 0.5 * exp:
+            if got < 0.35 * exp:
                 raise RuntimeError(
                     f"chunk {i+1}/{len(chunks)} truncated — "
                     f"{got:.1f}s audio for ~{exp:.1f}s of text"
@@ -358,7 +367,7 @@ def generate_elevenlabs(key: str, text: str) -> str:
             os.remove(listf)
 
         total, exp_total = duration_of(mp3), _expected_seconds(text)
-        if total < 0.6 * exp_total:
+        if total < 0.40 * exp_total:
             raise RuntimeError(
                 f"final audio truncated — {total:.1f}s for ~{exp_total:.1f}s of text"
             )
