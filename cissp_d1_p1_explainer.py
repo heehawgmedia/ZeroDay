@@ -895,8 +895,17 @@ class CISSP_D1P1(Scene):
             ),
         ]
 
+        # Per-question dwell times tuned to narration at 3.3 wps.
+        # Answer reveal aligns with narrator's "Answer:" cue for each question.
+        # Q1 "Answer:" at audio t=10.6s, Q2 at t=29.1s, Q3 at t=47.9s.
+        q_timing = [
+            (9.0, 7.0),   # Q1: 33-word stem → 10.0s, answer reveal at t=10.6s
+            (9.6, 7.9),   # Q2: 33-word stem → 10.0s, answer reveal at t=29.1s
+            (9.0, 6.5),   # Q3: 31-word stem → 9.4s,  answer reveal at t=47.9s
+        ]
+
         elapsed = 0.6
-        for i, (stem, a, b, c, answer) in enumerate(questions):
+        for (stem, a, b, c, answer), (stem_dwell, ans_dwell) in zip(questions, q_timing):
             q_bg = RoundedRectangle(corner_radius=0.16, width=12.5, height=1.65,
                                      color=BLUE, fill_color="#00101A",
                                      fill_opacity=1, stroke_width=1.5)
@@ -913,8 +922,8 @@ class CISSP_D1P1(Scene):
 
             self.play(FadeIn(q_bg), Write(q_txt), run_time=0.6)
             self.play(FadeIn(choices), run_time=0.4)
-            self.wait(5.0)
-            elapsed += 6.0
+            self.wait(stem_dwell)
+            elapsed += 1.0 + stem_dwell
 
             ans_bg = RoundedRectangle(corner_radius=0.14, width=11.5, height=0.62,
                                        color=GREEN, fill_color="#051A0A",
@@ -923,8 +932,8 @@ class CISSP_D1P1(Scene):
             ans_txt = Text(answer, font_size=16, color=WHITE, weight=BOLD)
             ans_txt.move_to(ans_bg.get_center())
             self.play(FadeIn(ans_bg), Write(ans_txt), run_time=0.5)
-            self.wait(5.5)
-            elapsed += 6.0
+            self.wait(ans_dwell)
+            elapsed += 0.5 + ans_dwell
 
             self.play(FadeOut(q_bg), FadeOut(q_txt), FadeOut(choices),
                       FadeOut(ans_bg), FadeOut(ans_txt), run_time=0.4)
