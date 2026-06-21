@@ -72,7 +72,7 @@ def exam_tip(scene, text, anchor=None, buff=0.3, **_):
     if anchor:
         badge.next_to(anchor, DOWN, buff=buff)
     else:
-        badge.to_edge(UP, buff=1.0)
+        badge.to_edge(DOWN, buff=0.3)
     scene.play(FadeIn(badge, shift=DOWN*0.1), run_time=0.5)
     return badge
 
@@ -303,19 +303,19 @@ class CISSP_D3(Scene):
 
         all_rows = VGroup()
         for label, desc, color in principles:
-            row_bg = RoundedRectangle(corner_radius=0.12, width=13.0, height=1.1,
+            row_bg = RoundedRectangle(corner_radius=0.12, width=13.0, height=0.90,
                                       color=color, fill_color=BG,
                                       fill_opacity=0.92, stroke_width=1.8)
-            label_mob = Text(label, font_size=14, color=color, weight=BOLD)
+            label_mob = Text(label, font_size=13, color=color, weight=BOLD)
             label_mob.next_to(row_bg.get_left(), RIGHT, buff=0.35)
             label_mob.set_y(row_bg.get_center()[1])
-            desc_mob = Text(desc, font_size=12, color=WHITE, line_spacing=1.2)
+            desc_mob = Text(desc, font_size=11, color=WHITE, line_spacing=1.15)
             desc_mob.move_to(row_bg.get_center() + RIGHT*1.5)
             desc_mob.set_y(row_bg.get_center()[1])
             all_rows.add(VGroup(row_bg, label_mob, desc_mob))
 
-        all_rows.arrange(DOWN, buff=0.10)
-        all_rows.move_to(DOWN*0.2)
+        all_rows.arrange(DOWN, buff=0.08)
+        all_rows.move_to(DOWN*0.35)
 
         elapsed = 0.6
         dwells = [8.5, 7.5, 7.0, 7.0, 7.5, 7.0]
@@ -399,7 +399,7 @@ class CISSP_D3(Scene):
         bg = self._tech_bg()
         self._sound("s3")
 
-        scene_title(self, "Clark-Wilson, Brewer-Nash & Trusted Computing Base", color=GREEN)
+        scene_title(self, "Clark-Wilson, Brewer-Nash & the TCB", color=GREEN)
 
         # Clark-Wilson panel
         cw_bg = RoundedRectangle(corner_radius=0.15, width=5.8, height=2.5,
@@ -438,10 +438,10 @@ class CISSP_D3(Scene):
         top_panels.move_to(UP*1.15)
 
         # TCB + Reference Monitor panel
-        tcb_bg = RoundedRectangle(corner_radius=0.15, width=13.0, height=1.8,
+        tcb_bg = RoundedRectangle(corner_radius=0.15, width=13.0, height=2.1,
                                    color=RED, fill_color="#1A0000",
                                    fill_opacity=0.95, stroke_width=2)
-        tcb_bg.move_to(DOWN*2.2)
+        tcb_bg.move_to(DOWN*2.45)
         tcb_items = VGroup(
             Text("TRUSTED COMPUTING BASE (TCB): All hardware, firmware & software that enforce security policy. Everything outside = untrusted.",
                  font_size=11, color=WHITE, line_spacing=1.15),
@@ -727,7 +727,7 @@ class CISSP_D3(Scene):
             pki_cards.add(VGroup(card_bg, abbr_mob, name_mob, desc_mob))
 
         pki_cards.arrange(RIGHT, buff=0.3)
-        pki_cards.move_to(UP*1.55)
+        pki_cards.move_to(UP*1.4)
 
         # Digital Signature panel
         sig_bg = RoundedRectangle(corner_radius=0.12, width=13.0, height=1.5,
@@ -804,8 +804,8 @@ class CISSP_D3(Scene):
             desc_mob.set_y(row_bg.get_center()[1])
             all_rows.add(VGroup(row_bg, label_mob, desc_mob))
 
-        all_rows.arrange(DOWN, buff=0.10)
-        all_rows.move_to(DOWN*0.2)
+        all_rows.arrange(DOWN, buff=0.08)
+        all_rows.move_to(DOWN*0.3)
 
         elapsed = 0.6
         dwells = [7.0, 6.5, 6.5, 7.0, 7.5, 7.0]
