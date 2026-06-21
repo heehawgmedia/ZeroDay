@@ -31,7 +31,7 @@ except ImportError:
     pass
 
 ELEVEN_API_KEY  = os.environ.get("ELEVEN_API_KEY") or os.environ.get("ELEVENLABS_API_KEY")
-ELEVEN_VOICE_ID = os.environ.get("CISSP_D3_VOICE_ID", "TABZn6CDfjMNGrsnGzzD")
+ELEVEN_VOICE_ID = os.environ.get("CISSP_D3_VOICE_ID", "CwhRBWXzGAHq8TQ4Fs17")
 ELEVEN_MODEL    = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 
 NARRATIONS = {
