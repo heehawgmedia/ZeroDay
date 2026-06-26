@@ -17,6 +17,7 @@ Usage:
 import json
 import os
 import re
+import time
 import subprocess
 import argparse
 
@@ -37,6 +38,8 @@ ELEVEN_MODEL    = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 GOOGLE_API_KEY   = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_AI_STUDIO_KEY")
 GOOGLE_TTS_VOICE = os.environ.get("GOOGLE_TTS_VOICE", "Charon")
 GOOGLE_TTS_MODEL = os.environ.get("GOOGLE_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+# Free tier caps Gemini TTS at ~10 req/min. Sleep between calls to stay under it.
+GOOGLE_TTS_DELAY = float(os.environ.get("GOOGLE_TTS_DELAY", "7"))
 
 NARRATIONS = {
     "s0": (
@@ -485,8 +488,18 @@ def generate_google_tts(key: str, text: str) -> str:
             },
         },
     }
-    resp = _req.post(url, json=payload, timeout=120)
-    if resp.status_code != 200:
+    # Retry on 429 (rate limit) with exponential backoff before giving up.
+    resp = None
+    for attempt in range(1, 5):
+        resp = _req.post(url, json=payload, timeout=120)
+        if resp.status_code == 200:
+            break
+        if resp.status_code == 429 and attempt < 4:
+            wait = 20 * attempt  # 20s, 40s, 60s
+            print(f"      {key}: rate-limited (429), waiting {wait}s "
+                  f"(retry {attempt}/3)...")
+            time.sleep(wait)
+            continue
         raise RuntimeError(
             f"Google TTS {resp.status_code}: {resp.text[:300]}"
         )
@@ -510,6 +523,9 @@ def generate_google_tts(key: str, text: str) -> str:
         raise RuntimeError(
             f"ffmpeg PCM→MP3 failed: {proc.stderr.decode()[:200]}"
         )
+    # Throttle to stay under the free-tier per-minute request cap.
+    if GOOGLE_TTS_DELAY > 0:
+        time.sleep(GOOGLE_TTS_DELAY)
     return mp3
 
 
