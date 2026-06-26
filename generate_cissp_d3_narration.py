@@ -34,6 +34,10 @@ ELEVEN_API_KEY  = os.environ.get("ELEVEN_API_KEY") or os.environ.get("ELEVENLABS
 ELEVEN_VOICE_ID = os.environ.get("CISSP_D3_VOICE_ID", "CwhRBWXzGAHq8TQ4Fs17")
 ELEVEN_MODEL    = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
 
+GOOGLE_API_KEY   = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_AI_STUDIO_KEY")
+GOOGLE_TTS_VOICE = os.environ.get("GOOGLE_TTS_VOICE", "Charon")
+GOOGLE_TTS_MODEL = os.environ.get("GOOGLE_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+
 NARRATIONS = {
     "s0": (
         "A developer writes an error handler that returns the full stack trace to the browser on any exception. "
@@ -457,6 +461,58 @@ def generate_elevenlabs(key: str, text: str) -> str:
                     pass
 
 
+def generate_google_tts(key: str, text: str) -> str:
+    """Synthesize via Google AI Studio Gemini TTS, returns path to MP3.
+
+    The API returns raw PCM (s16le, 24 kHz, mono) encoded as base64.
+    ffmpeg converts that to MP3. Requires GOOGLE_API_KEY in .env.
+    """
+    import base64
+    import requests as _req
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GOOGLE_TTS_MODEL}:generateContent?key={GOOGLE_API_KEY}"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": text}]}],
+        "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {
+                "voiceConfig": {
+                    "prebuiltVoiceConfig": {"voiceName": GOOGLE_TTS_VOICE}
+                }
+            },
+        },
+    }
+    resp = _req.post(url, json=payload, timeout=120)
+    if resp.status_code != 200:
+        raise RuntimeError(
+            f"Google TTS {resp.status_code}: {resp.text[:300]}"
+        )
+    data = resp.json()
+    audio_b64 = (
+        data["candidates"][0]["content"]["parts"][0]["inlineData"]["data"]
+    )
+    pcm_bytes = base64.b64decode(audio_b64)
+
+    mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", "pipe:0",
+            "-codec:a", "libmp3lame", "-qscale:a", "2", mp3,
+        ],
+        input=pcm_bytes,
+        capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"ffmpeg PCM→MP3 failed: {proc.stderr.decode()[:200]}"
+        )
+    return mp3
+
+
 def generate_pico(key: str, text: str) -> str:
     wav = os.path.join(AUDIO_DIR, f"{key}.wav")
     mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
@@ -477,9 +533,17 @@ if __name__ == "__main__":
                         help="Only generate these keys (e.g. --only s2 s3)")
     args = parser.parse_args()
 
-    engine = "ElevenLabs" if ELEVEN_API_KEY else "Pico (offline fallback)"
+    if ELEVEN_API_KEY:
+        engine = "ElevenLabs"
+        voice_label = ELEVEN_VOICE_ID
+    elif GOOGLE_API_KEY:
+        engine = "Google AI Studio TTS"
+        voice_label = GOOGLE_TTS_VOICE
+    else:
+        engine = "Pico (offline fallback)"
+        voice_label = "N/A"
     print(f"Engine: {engine}")
-    print(f"Voice:  {ELEVEN_VOICE_ID}")
+    print(f"Voice:  {voice_label}")
     print(f"Output: {AUDIO_DIR}")
 
     dur_path = os.path.join(AUDIO_DIR, "durations.json")
@@ -505,12 +569,24 @@ if __name__ == "__main__":
         try:
             if ELEVEN_API_KEY:
                 mp3 = generate_elevenlabs(key, text)
+            elif GOOGLE_API_KEY:
+                mp3 = generate_google_tts(key, text)
             else:
                 mp3 = generate_pico(key, text)
             durations[key] = round(duration_of(mp3), 2)
             print(f"  {key}: {durations[key]:.1f}s → {mp3}")
         except Exception as e:
-            print(f"  {key}: ElevenLabs FAILED — {e}")
+            print(f"  {key}: TTS FAILED — {e}")
+            # If ElevenLabs failed and Google is available, try it before Pico
+            if ELEVEN_API_KEY and GOOGLE_API_KEY:
+                print(f"         Attempting Google TTS fallback...")
+                try:
+                    mp3 = generate_google_tts(key, text)
+                    durations[key] = round(duration_of(mp3), 2)
+                    print(f"  {key}: {durations[key]:.1f}s → {mp3}  (Google TTS fallback)")
+                    continue
+                except Exception as ge:
+                    print(f"  {key}: Google TTS also failed — {ge}")
             print(f"         Attempting Pico fallback...")
             try:
                 mp3 = generate_pico(key, text)
@@ -544,4 +620,4 @@ if __name__ == "__main__":
         print("\n  Resolve the above before running manim.\n")
         raise SystemExit(1)
     else:
-        print("\n✓ All scenes generated with ElevenLabs — safe to render.")
+        print(f"\n✓ All scenes generated with {engine} — safe to render.")
