@@ -8,6 +8,11 @@ Render:
     manim -qh cissp_shorts.py ZeroTrust
     manim -qh cissp_shorts.py IncidentResponse
     manim -qh cissp_shorts.py ExamTraps
+    manim -qh cissp_shorts.py RiskManagement
+    manim -qh cissp_shorts.py AccessControlModels
+    manim -qh cissp_shorts.py AuthenticationFactors
+    manim -qh cissp_shorts.py Cryptography
+    manim -qh cissp_shorts.py MalwareTypes
 """
 from __future__ import annotations
 import json, os
@@ -759,3 +764,402 @@ class ExamTraps(_Short):
 
         # ── CTA ───────────────────────────────────────────────────────────────
         self._cta_section("Think like a manager.\nPass the CISSP.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 6 — RISK MANAGEMENT
+# ═════════════════════════════════════════════════════════════════════════════
+class RiskManagement(_Short):
+    ID = "c6"
+
+    def construct(self):
+        # ── Hook ──────────────────────────────────────────────────────────────
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        line = Text("Risk isn't a guess.", font_size=40, color=WHITE, weight=BOLD)
+        line.move_to(UP * 3.4)
+        self.play(Write(line), run_time=0.55)
+
+        fglow, fcard = self._glow_card(7.2, 1.3, AMBER)
+        fcard.move_to(UP * 1.3)
+        fglow.move_to(UP * 1.3)
+        formula = Text("ALE = SLE × ARO", font_size=44, color=AMBER, weight=BOLD)
+        formula.move_to(fcard.get_center())
+        self.play(FadeIn(fglow), DrawBorderThenFill(fcard), run_time=0.4)
+        self.play(Write(formula), run_time=0.5)
+        self.play(Flash(fcard, color=AMBER, flash_radius=1.2,
+                        num_lines=10, line_length=0.22), run_time=0.4)
+
+        sub = Text("It's math. Let's break it down.", font_size=22, color=GRAY)
+        sub.next_to(fcard, DOWN, buff=0.55)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        # ── Main ──────────────────────────────────────────────────────────────
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("RISK MANAGEMENT", color=AMBER)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        # Formula strip
+        sglow, strip = self._glow_card(8.2, 1.25, AMBER)
+        strip.move_to(UP * 4.0)
+        sglow.move_to(UP * 4.0)
+        f_main = Text("ALE = SLE × ARO", font_size=28, color=AMBER, weight=BOLD)
+        f_sub  = Text("Annualized Loss = Single Loss × Annual Rate",
+                      font_size=13, color=WHITE)
+        f_grp  = VGroup(f_main, f_sub).arrange(DOWN, buff=0.12)
+        f_grp.move_to(strip.get_center())
+        self.play(FadeIn(sglow), DrawBorderThenFill(strip),
+                  FadeIn(f_grp), run_time=0.5)
+        self.wait(9.0)
+
+        responses = [
+            ("AVOID",    "Stop the risky activity entirely.",            RED),
+            ("TRANSFER", "Shift the loss to a third party — insurance.", BLUE),
+            ("MITIGATE", "Apply controls to cut impact or likelihood.",  GREEN),
+            ("ACCEPT",   "Cost of control exceeds the loss — live with it.", AMBER),
+        ]
+        cards = []
+        for label, desc, color in responses:
+            glow, card = self._glow_card(8.2, 1.4, color)
+            lbl = Text(label, font_size=21, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.4)
+            d = Text(desc, font_size=13, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            cards.append(VGroup(glow, card, lbl, d))
+
+        grp = VGroup(*cards).arrange(DOWN, buff=0.16)
+        grp.move_to(DOWN * 0.55)
+
+        for g in cards:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.4)
+            self.wait(4.6)
+
+        tip = self._exam_tip("Risk is never zero — what's left after controls is RESIDUAL risk.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(4.0)
+        self._pad("m")
+
+        # ── CTA ───────────────────────────────────────────────────────────────
+        self._cta_section("Quantify the risk.\nPass the CISSP.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 7 — ACCESS CONTROL MODELS
+# ═════════════════════════════════════════════════════════════════════════════
+class AccessControlModels(_Short):
+    ID = "c7"
+
+    def construct(self):
+        # ── Hook ──────────────────────────────────────────────────────────────
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        q = Text("Who decides\nwho gets access?",
+                 font_size=40, color=WHITE, weight=BOLD, line_spacing=1.2)
+        q.move_to(UP * 2.9)
+        self.play(Write(q), run_time=0.7)
+
+        four = Text("4 MODELS", font_size=52, color=BLUE, weight=BOLD)
+        four.next_to(q, DOWN, buff=0.5)
+        self.play(GrowFromCenter(four), run_time=0.4)
+        self.play(Flash(four, color=BLUE, flash_radius=1.2,
+                        num_lines=10, line_length=0.22), run_time=0.35)
+
+        sub = Text("DAC · MAC · RBAC · ABAC", font_size=24, color=AMBER)
+        sub.next_to(four, DOWN, buff=0.4)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        # ── Main ──────────────────────────────────────────────────────────────
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("ACCESS CONTROL", color=BLUE)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        models = [
+            ("DAC",  "Owner decides who gets in.",          "Discretionary — flexible.",   BLUE),
+            ("MAC",  "System enforces via labels.",         "Mandatory — military.",       RED),
+            ("RBAC", "Access tied to your job role.",       "Role-based, not identity.",   GREEN),
+            ("ABAC", "Evaluates user, time, location.",     "Attribute-based — granular.", AMBER),
+        ]
+        blocks = []
+        for abbr, line1, line2, color in models:
+            glow, blk = self._glow_card(8.2, 1.92, color)
+            lbl = Text(abbr, font_size=24, color=color, weight=BOLD)
+            lbl.move_to(blk.get_left() + RIGHT * 1.2)
+            l1 = Text(line1, font_size=13, color=WHITE, weight=BOLD)
+            l2 = Text(line2, font_size=12, color=GRAY)
+            right = VGroup(l1, l2).arrange(DOWN, buff=0.1, aligned_edge=LEFT)
+            right.next_to(lbl, RIGHT, buff=0.28)
+            right.set_y(lbl.get_y())
+            blocks.append(VGroup(glow, blk, lbl, right))
+
+        grp = VGroup(*blocks).arrange(DOWN, buff=0.2)
+        grp.move_to(UP * 0.6)
+
+        for g in blocks:
+            glow, blk, lbl, right = g
+            self.play(FadeIn(glow), DrawBorderThenFill(blk), run_time=0.4)
+            self.play(Write(lbl), FadeIn(right, shift=RIGHT * 0.15), run_time=0.35)
+            self.play(
+                ShowPassingFlash(
+                    blk.copy().set_stroke(WHITE, width=4, opacity=0.4),
+                    time_width=0.5),
+                run_time=0.4)
+            self.wait(6.5)
+
+        tip = self._exam_tip("MAC = mandatory labels. RBAC follows the job, not the person.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(4.0)
+        self._pad("m")
+
+        # ── CTA ───────────────────────────────────────────────────────────────
+        self._cta_section("Know the models.\nAce the exam.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 8 — AUTHENTICATION FACTORS
+# ═════════════════════════════════════════════════════════════════════════════
+class AuthenticationFactors(_Short):
+    ID = "c8"
+
+    def construct(self):
+        # ── Hook ──────────────────────────────────────────────────────────────
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        line = Text("A password alone\nwon't save you.",
+                    font_size=40, color=WHITE, weight=BOLD, line_spacing=1.2)
+        line.move_to(UP * 2.9)
+        self.play(Write(line), run_time=0.7)
+
+        mfa = Text("MFA", font_size=84, color=GREEN, weight=BOLD)
+        mfa.next_to(line, DOWN, buff=0.45)
+        self.play(GrowFromCenter(mfa), run_time=0.4)
+        self.play(Flash(mfa, color=GREEN, flash_radius=1.4,
+                        num_lines=12, line_length=0.26), run_time=0.4)
+
+        sub = Text("The factors that prove who you are.", font_size=22, color=AMBER)
+        sub.next_to(mfa, DOWN, buff=0.45)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        # ── Main ──────────────────────────────────────────────────────────────
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("AUTH FACTORS", color=GREEN)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        factors = [
+            ("KNOW",  "Password · PIN · passphrase",    BLUE),
+            ("HAVE",  "Token · smart card · phone",     GREEN),
+            ("ARE",   "Fingerprint · face · iris",      AMBER),
+            ("WHERE", "Location · GPS · geofence",      TEAL),
+            ("DO",    "Typing rhythm · behavior",       RED),
+        ]
+        rows = []
+        for label, desc, color in factors:
+            glow, card = self._glow_card(8.2, 1.28, color)
+            lbl = Text(label, font_size=22, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.35)
+            d = Text(desc, font_size=14, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.4)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+
+        grp = VGroup(*rows).arrange(DOWN, buff=0.16)
+        grp.move_to(UP * 0.45)
+
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.4)
+            self.wait(4.8)
+
+        tip = self._exam_tip("Two of the SAME factor is NOT MFA — the types must differ.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(4.0)
+        self._pad("m")
+
+        # ── CTA ───────────────────────────────────────────────────────────────
+        self._cta_section("Layer your factors.\nLock it down.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 9 — CRYPTOGRAPHY: SYMMETRIC vs ASYMMETRIC
+# ═════════════════════════════════════════════════════════════════════════════
+class Cryptography(_Short):
+    ID = "c9"
+
+    def construct(self):
+        # ── Hook ──────────────────────────────────────────────────────────────
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        one = Text("One key,", font_size=46, color=GREEN, weight=BOLD)
+        two = Text("or two?",  font_size=46, color=BLUE,  weight=BOLD)
+        motto = VGroup(one, two).arrange(DOWN, buff=0.2)
+        motto.move_to(UP * 2.5)
+        self.play(Write(one), run_time=0.45)
+        self.play(Write(two), run_time=0.45)
+        self.play(Flash(two, color=BLUE, flash_radius=1.1,
+                        num_lines=10, line_length=0.22), run_time=0.4)
+
+        sub = Text("Symmetric vs Asymmetric — settled.", font_size=22, color=AMBER)
+        sub.next_to(motto, DOWN, buff=0.55)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        # ── Main ──────────────────────────────────────────────────────────────
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("CRYPTOGRAPHY", color=BLUE)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        # Two columns
+        glow_s, sym = self._glow_card(3.9, 3.4, GREEN)
+        sym.move_to(LEFT * 2.1 + UP * 2.55)
+        glow_s.move_to(LEFT * 2.1 + UP * 2.55)
+        s_lbl = Text("SYMMETRIC", font_size=18, color=GREEN, weight=BOLD)
+        s_lbl.move_to(sym.get_top() + DOWN * 0.32)
+        s_body = Text("ONE shared key\nFast — bulk data\nAES · DES · 3DES\nKey distribution\nis the problem",
+                      font_size=13, color=WHITE, line_spacing=1.3)
+        s_body.move_to(sym.get_center() + DOWN * 0.18)
+
+        glow_a, asym = self._glow_card(3.9, 3.4, BLUE)
+        asym.move_to(RIGHT * 2.1 + UP * 2.55)
+        glow_a.move_to(RIGHT * 2.1 + UP * 2.55)
+        a_lbl = Text("ASYMMETRIC", font_size=18, color=BLUE, weight=BOLD)
+        a_lbl.move_to(asym.get_top() + DOWN * 0.32)
+        a_body = Text("Public + private\nSlow — secure\nRSA · ECC\nSolves the key\nexchange problem",
+                      font_size=13, color=WHITE, line_spacing=1.3)
+        a_body.move_to(asym.get_center() + DOWN * 0.18)
+
+        self.play(FadeIn(glow_s), DrawBorderThenFill(sym),
+                  FadeIn(s_lbl), FadeIn(s_body), run_time=0.5)
+        self.wait(9.5)
+        self.play(FadeIn(glow_a), DrawBorderThenFill(asym),
+                  FadeIn(a_lbl), FadeIn(a_body), run_time=0.5)
+        self.wait(9.5)
+
+        # Hybrid strip
+        hglow, hyb = self._glow_card(8.2, 1.5, AMBER)
+        hyb.move_to(DOWN * 1.7)
+        hglow.move_to(DOWN * 1.7)
+        h_lbl  = Text("HYBRID = TLS", font_size=18, color=AMBER, weight=BOLD)
+        h_desc = Text("Asymmetric exchanges the key → symmetric encrypts the data",
+                      font_size=12, color=WHITE)
+        hc = VGroup(h_lbl, h_desc).arrange(DOWN, buff=0.12)
+        hc.move_to(hyb.get_center())
+        self.play(FadeIn(hglow), DrawBorderThenFill(hyb), FadeIn(hc), run_time=0.5)
+        self.play(Flash(hyb, color=AMBER, flash_radius=0.9,
+                        num_lines=8, line_length=0.2), run_time=0.4)
+        self.wait(7.0)
+
+        tip = self._exam_tip("Encrypt with the recipient's PUBLIC key. Sign with your PRIVATE key.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(4.0)
+        self._pad("m")
+
+        # ── CTA ───────────────────────────────────────────────────────────────
+        self._cta_section("One key or two?\nNow you know.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 10 — MALWARE TYPES
+# ═════════════════════════════════════════════════════════════════════════════
+class MalwareTypes(_Short):
+    ID = "c10"
+
+    def construct(self):
+        # ── Hook ──────────────────────────────────────────────────────────────
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("VIRUS  ≠  WORM", font_size=48, color=RED, weight=BOLD)
+        v.move_to(UP * 2.6)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=RED, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+
+        nope = Text("Not all malware\nis a virus.",
+                    font_size=34, color=WHITE, weight=BOLD, line_spacing=1.2)
+        nope.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(nope, shift=DOWN * 0.1), run_time=0.45)
+
+        sub = Text("6 types the exam loves.", font_size=24, color=AMBER)
+        sub.next_to(nope, DOWN, buff=0.45)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        # ── Main ──────────────────────────────────────────────────────────────
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("MALWARE TYPES", color=RED)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        types = [
+            ("VIRUS",      "Attaches to a file · needs you to run it", RED),
+            ("WORM",       "Self-replicates · spreads alone",          AMBER),
+            ("TROJAN",     "Disguised as legit software",              BLUE),
+            ("RANSOMWARE", "Encrypts files · demands payment",         TEAL),
+            ("ROOTKIT",    "Hides at kernel level · stealth access",   GREEN),
+            ("LOGIC BOMB", "Dormant until a trigger fires",            GRAY),
+        ]
+        rows = []
+        for label, desc, color in types:
+            glow, card = self._glow_card(8.2, 1.18, color)
+            lbl = Text(label, font_size=18, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.5)
+            d = Text(desc, font_size=12, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+
+        grp = VGroup(*rows).arrange(DOWN, buff=0.12)
+        grp.move_to(UP * 0.4)
+
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.38)
+            self.wait(4.4)
+
+        tip = self._exam_tip("Worm spreads by itself. A virus needs YOU to execute it.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(4.0)
+        self._pad("m")
+
+        # ── CTA ───────────────────────────────────────────────────────────────
+        self._cta_section("Know your malware.\nPass the exam.")

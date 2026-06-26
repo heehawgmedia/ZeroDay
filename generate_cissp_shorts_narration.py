@@ -14,7 +14,7 @@ Usage:
   python generate_cissp_shorts_narration.py --force
   python generate_cissp_shorts_narration.py --only c1_h c2_m
 """
-import json, os, re, subprocess, argparse
+import json, os, re, time, subprocess, argparse
 
 BASE_DIR  = os.path.dirname(os.path.abspath(__file__))
 AUDIO_DIR = os.path.join(BASE_DIR, "cissp_shorts_audio")
@@ -29,6 +29,13 @@ except ImportError:
 ELEVEN_API_KEY  = os.environ.get("ELEVEN_API_KEY") or os.environ.get("ELEVENLABS_API_KEY")
 ELEVEN_VOICE_ID = os.environ.get("CISSP_SHORTS_VOICE_ID", "UgBBYS2sOqTuMpoF3BR0")
 ELEVEN_MODEL    = os.environ.get("ELEVEN_MODEL", "eleven_multilingual_v2")
+
+# Google AI Studio (Gemini) TTS — primary engine for the Shorts (Schedar voice).
+GOOGLE_API_KEY   = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GOOGLE_AI_STUDIO_KEY")
+GOOGLE_TTS_VOICE = os.environ.get("CISSP_SHORTS_GOOGLE_VOICE") or os.environ.get("GOOGLE_TTS_VOICE", "Schedar")
+GOOGLE_TTS_MODEL = os.environ.get("GOOGLE_TTS_MODEL", "gemini-2.5-flash-preview-tts")
+# Free tier caps Gemini TTS at ~10 req/min. Sleep between calls to stay under it.
+GOOGLE_TTS_DELAY = float(os.environ.get("GOOGLE_TTS_DELAY", "7"))
 
 NARRATIONS = {
     # ── Short 1: CIA Triad ────────────────────────────────────────────────
@@ -136,6 +143,119 @@ NARRATIONS = {
         "Think like a manager. Every. Single. Question."
     ),
     "c5_c": (
+        "Save this. Share it. Subscribe for daily exam tips. "
+        "Visit zerodaylabs.tech for the full CISSP study book."
+    ),
+
+    # ── Short 6: Risk Management ──────────────────────────────────────────
+    "c6_h": (
+        "Risk is not a guess. It's math. "
+        "Here's the formula the CISSP wants you to know."
+    ),
+    "c6_m": (
+        "Start with the single loss expectancy — the dollar cost of one incident. "
+        "That is asset value times exposure factor. "
+        "Next, the annualized rate of occurrence — how many times per year you expect it. "
+        "Multiply them and you get the annualized loss expectancy. "
+        "A.L.E. equals S.L.E. times A.R.O. That number drives every spending decision. "
+        "Now, the four ways to handle risk. "
+        "Avoid — stop the risky activity entirely. "
+        "Transfer — shift the loss to a third party, usually insurance. "
+        "Mitigate — apply controls to reduce the impact or the likelihood. "
+        "Accept — acknowledge the risk and move on, when the cost of control exceeds the loss. "
+        "Exam tip: you can never reach zero risk. "
+        "What remains after your controls is residual risk."
+    ),
+    "c6_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 7: Access Control Models ────────────────────────────────────
+    "c7_h": (
+        "Who decides who gets access? "
+        "Four access control models. Know which is which."
+    ),
+    "c7_m": (
+        "Discretionary access control, D.A.C. — the data owner decides who gets access. "
+        "Flexible, but risky. Think file permissions you set yourself. "
+        "Mandatory access control, M.A.C. — the system enforces access using security labels and clearances. "
+        "Rigid and powerful. It is used by the military. "
+        "Role-based access control, R.B.A.C. — access is tied to your job role, not your identity. "
+        "Add someone to a role, and they inherit its permissions. "
+        "Attribute-based access control, A.B.A.C. — access is granted by evaluating attributes: "
+        "user, resource, time, and location. The most granular model. "
+        "Exam tip: M.A.C. uses mandatory labels — users cannot override it. "
+        "R.B.A.C. follows the job, not the person."
+    ),
+    "c7_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
+
+    # ── Short 8: Authentication Factors ───────────────────────────────────
+    "c8_h": (
+        "A password alone won't save you. "
+        "This is how real authentication works."
+    ),
+    "c8_m": (
+        "Authentication relies on factors. "
+        "Something you know — a password, a PIN, or a passphrase. "
+        "Something you have — a token, a smart card, or your phone. "
+        "Something you are — a biometric, like a fingerprint, face, or iris. "
+        "Two more round it out. "
+        "Somewhere you are — your location, verified by G.P.S. or a geofence. "
+        "And something you do — your behavior, like typing rhythm. "
+        "Multi-factor authentication means combining two or more different factor types. "
+        "A password plus a code from your phone is multi-factor. "
+        "But a password plus a security question is not — both are something you know. "
+        "Exam tip: two of the same factor is never multi-factor. The types must differ."
+    ),
+    "c8_c": (
+        "Subscribe to Zero Day Labs for CISSP and Security Plus exam content. "
+        "Like this video. zerodaylabs.tech."
+    ),
+
+    # ── Short 9: Cryptography — Symmetric vs Asymmetric ───────────────────
+    "c9_h": (
+        "One key, or two? "
+        "This one trips up everyone. Let's fix that."
+    ),
+    "c9_m": (
+        "Symmetric encryption uses one shared key to encrypt and decrypt. "
+        "It is fast, and great for bulk data. "
+        "The catch — both sides need the same key, so key distribution is the hard problem. "
+        "Think A.E.S. and the old D.E.S. "
+        "Asymmetric encryption uses a key pair: a public key and a private key. "
+        "What one key locks, only the other can unlock. "
+        "It is slow, but it solves key exchange. Think R.S.A. and elliptic curve. "
+        "The real world uses both — hybrid encryption. "
+        "Asymmetric securely exchanges a symmetric key, then symmetric encrypts the data. "
+        "That is exactly how T.L.S. works. "
+        "Exam tip: encrypt with the recipient's public key for confidentiality. "
+        "Sign with your own private key for authenticity."
+    ),
+    "c9_c": (
+        "Follow Zero Day Labs. Like this short if it helped. "
+        "Daily exam tips at zerodaylabs.tech."
+    ),
+
+    # ── Short 10: Malware Types ───────────────────────────────────────────
+    "c10_h": (
+        "Not all malware is a virus. "
+        "Mix these up, and you'll miss the question."
+    ),
+    "c10_m": (
+        "A virus attaches to a file and needs a user to run it before it spreads. "
+        "A worm self-replicates across the network on its own — no host file, no user needed. "
+        "A trojan disguises itself as legitimate software, then does something malicious behind the scenes. "
+        "Ransomware encrypts your files and demands payment for the key. "
+        "A rootkit hides deep in the system, often at the kernel level, to keep stealthy access. "
+        "And a logic bomb sits dormant until a specific condition triggers it — a date, or an event. "
+        "Exam tip: the key difference — a worm spreads by itself, "
+        "while a virus needs you to execute it."
+    ),
+    "c10_c": (
         "Save this. Share it. Subscribe for daily exam tips. "
         "Visit zerodaylabs.tech for the full CISSP study book."
     ),
@@ -287,6 +407,64 @@ def generate_elevenlabs(key: str, text: str) -> str:
                     pass
 
 
+def generate_google_tts(key: str, text: str) -> str:
+    """Synthesize via Google AI Studio Gemini TTS, returns path to MP3.
+
+    The API returns raw PCM (s16le, 24 kHz, mono) as base64; ffmpeg converts it
+    to MP3. Retries 429 (rate limit) with exponential backoff, and throttles
+    between calls to respect the free-tier ~10 req/min cap.
+    """
+    import base64
+    import requests as _req
+
+    url = (
+        f"https://generativelanguage.googleapis.com/v1beta/models/"
+        f"{GOOGLE_TTS_MODEL}:generateContent?key={GOOGLE_API_KEY}"
+    )
+    payload = {
+        "contents": [{"parts": [{"text": text}]}],
+        "generationConfig": {
+            "responseModalities": ["AUDIO"],
+            "speechConfig": {
+                "voiceConfig": {
+                    "prebuiltVoiceConfig": {"voiceName": GOOGLE_TTS_VOICE}
+                }
+            },
+        },
+    }
+    resp = None
+    for attempt in range(1, 5):
+        resp = _req.post(url, json=payload, timeout=120)
+        if resp.status_code == 200:
+            break
+        if resp.status_code == 429 and attempt < 4:
+            wait = 20 * attempt  # 20s, 40s, 60s
+            print(f"      {key}: rate-limited (429), waiting {wait}s "
+                  f"(retry {attempt}/3)...")
+            time.sleep(wait)
+            continue
+        raise RuntimeError(f"Google TTS {resp.status_code}: {resp.text[:300]}")
+
+    data = resp.json()
+    audio_b64 = data["candidates"][0]["content"]["parts"][0]["inlineData"]["data"]
+    pcm_bytes = base64.b64decode(audio_b64)
+
+    mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
+    proc = subprocess.run(
+        [
+            "ffmpeg", "-y",
+            "-f", "s16le", "-ar", "24000", "-ac", "1", "-i", "pipe:0",
+            "-codec:a", "libmp3lame", "-qscale:a", "2", mp3,
+        ],
+        input=pcm_bytes, capture_output=True,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(f"ffmpeg PCM→MP3 failed: {proc.stderr.decode()[:200]}")
+    if GOOGLE_TTS_DELAY > 0:
+        time.sleep(GOOGLE_TTS_DELAY)
+    return mp3
+
+
 def generate_pico(key: str, text: str) -> str:
     wav = os.path.join(AUDIO_DIR, f"{key}.wav")
     mp3 = os.path.join(AUDIO_DIR, f"{key}.mp3")
@@ -307,11 +485,20 @@ if __name__ == "__main__":
                         help="Only generate these keys (e.g. --only c1_h c2_m)")
     args = parser.parse_args()
 
-    engine = "ElevenLabs" if ELEVEN_API_KEY else "Pico (offline fallback)"
+    # Shorts prefer Google AI Studio (Schedar voice) when a key is present.
+    if GOOGLE_API_KEY:
+        engine = "Google AI Studio TTS"
+        voice_label = GOOGLE_TTS_VOICE
+    elif ELEVEN_API_KEY:
+        engine = "ElevenLabs"
+        voice_label = ELEVEN_VOICE_ID
+    else:
+        engine = "Pico (offline fallback)"
+        voice_label = "N/A"
     print(f"Engine: {engine}")
-    print(f"Voice:  {ELEVEN_VOICE_ID}")
+    print(f"Voice:  {voice_label}")
     print(f"Output: {AUDIO_DIR}")
-    print(f"Keys:   {len(NARRATIONS)} segments across 5 shorts\n")
+    print(f"Keys:   {len(NARRATIONS)} segments across 10 shorts\n")
 
     dur_path = os.path.join(AUDIO_DIR, "durations.json")
     durations: dict = {}
@@ -334,14 +521,26 @@ if __name__ == "__main__":
             continue
 
         try:
-            if ELEVEN_API_KEY:
+            if GOOGLE_API_KEY:
+                mp3 = generate_google_tts(key, text)
+            elif ELEVEN_API_KEY:
                 mp3 = generate_elevenlabs(key, text)
             else:
                 mp3 = generate_pico(key, text)
             durations[key] = round(duration_of(mp3), 2)
             print(f"  {key}: {durations[key]:.1f}s → {mp3}")
         except Exception as e:
-            print(f"  {key}: ElevenLabs FAILED — {e}")
+            print(f"  {key}: TTS FAILED — {e}")
+            # If Google failed and ElevenLabs is available, try it before Pico.
+            if GOOGLE_API_KEY and ELEVEN_API_KEY:
+                print(f"         Attempting ElevenLabs fallback...")
+                try:
+                    mp3 = generate_elevenlabs(key, text)
+                    durations[key] = round(duration_of(mp3), 2)
+                    print(f"  {key}: {durations[key]:.1f}s → {mp3}  (ElevenLabs fallback)")
+                    continue
+                except Exception as ee:
+                    print(f"  {key}: ElevenLabs also failed — {ee}")
             print(f"         Attempting Pico fallback...")
             try:
                 mp3 = generate_pico(key, text)
@@ -358,7 +557,7 @@ if __name__ == "__main__":
     total = sum(durations.values())
     print(f"\nWrote {dur_path}")
     print(f"Total narration: {total:.1f}s ({total/60:.1f} min)")
-    print(f"Avg per short:   {total/5:.1f}s")
+    print(f"Avg per short:   {total/10:.1f}s")
 
     # ── Quality gate ─────────────────────────────────────────────────────────
     if pico_fallbacks or failed_scenes:
@@ -376,8 +575,10 @@ if __name__ == "__main__":
         print("\n  Resolve the above before running manim.\n")
         raise SystemExit(1)
     else:
-        print("\n✓ All segments generated with ElevenLabs — safe to render.")
+        print(f"\n✓ All segments generated with {engine} — safe to render.")
         print("\nRender commands:")
         for short in ["CIATriad", "DataClassification", "ZeroTrust",
-                      "IncidentResponse", "ExamTraps"]:
+                      "IncidentResponse", "ExamTraps",
+                      "RiskManagement", "AccessControlModels",
+                      "AuthenticationFactors", "Cryptography", "MalwareTypes"]:
             print(f"  manim -qh cissp_shorts.py {short}")
