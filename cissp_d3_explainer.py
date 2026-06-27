@@ -35,7 +35,12 @@ _DUR_DEFAULTS = {
     "s7":  72.0,
     "s8":  72.0,
     "s9":  68.0,
-    "s10": 72.0,
+    "s10_q1": 14.0,
+    "s10_a1": 16.0,
+    "s10_q2": 13.0,
+    "s10_a2": 18.0,
+    "s10_q3": 18.0,
+    "s10_a3": 20.0,
     "s11": 52.0,
     "s12": 22.0,
 }
@@ -902,7 +907,6 @@ class CISSP_D3(Scene):
     # ── SCENE 10 — Practice Questions ────────────────────────────
     def s10_practice_questions(self):
         bg = self._tech_bg()
-        self._sound("s10")
 
         scene_title(self, "Practice Questions", color=GREEN)
 
@@ -936,15 +940,12 @@ class CISSP_D3(Scene):
             ),
         ]
 
-        # Per-question timing computed from narration word counts at 3.3 wps
-        q_timing = [
-            (9.6,  9.4),   # Q1: 35-word stem → 10.6s, answer reveal at t=11.2s
-            (7.8, 10.3),   # Q2: 27-word stem → 8.2s,  answer reveal at t=30.3s
-            (10.8, 13.0),  # Q3: 37-word stem → 11.2s, answer reveal at t=53.3s
-        ]
+        # Each stem/answer pair has its own audio clip. We start the clip, then
+        # hold for its MEASURED duration (from durations.json) — so the answer
+        # reveal always lands with the narration, independent of TTS voice/rate.
+        for i, (stem, a, b, c, answer) in enumerate(questions, start=1):
+            qkey, akey = f"s10_q{i}", f"s10_a{i}"
 
-        elapsed = 0.6
-        for (stem, a, b, c, answer), (stem_dwell, ans_dwell) in zip(questions, q_timing):
             q_bg = RoundedRectangle(corner_radius=0.16, width=13.0, height=1.65,
                                      color=BLUE, fill_color="#00101A",
                                      fill_opacity=1, stroke_width=1.5)
@@ -959,10 +960,11 @@ class CISSP_D3(Scene):
             choices.next_to(q_bg, DOWN, buff=0.25)
             choices.to_edge(LEFT, buff=1.5)
 
+            # Stem: start audio, reveal the question, hold for the rest of the clip.
+            self._sound(qkey)
             self.play(FadeIn(q_bg), Write(q_txt), run_time=0.6)
             self.play(FadeIn(choices), run_time=0.4)
-            self.wait(stem_dwell)
-            elapsed += 1.0 + stem_dwell
+            self.wait(max(0.5, DUR.get(qkey, 12.0) - 1.0))
 
             ans_bg = RoundedRectangle(corner_radius=0.14, width=12.5, height=0.72,
                                        color=GREEN, fill_color="#051A0A",
@@ -970,15 +972,15 @@ class CISSP_D3(Scene):
             ans_bg.to_edge(DOWN, buff=0.35)
             ans_txt = Text(answer, font_size=14, color=WHITE, weight=BOLD)
             ans_txt.move_to(ans_bg.get_center())
+
+            # Answer: start audio as the answer appears, hold for the rest of the clip.
+            self._sound(akey)
             self.play(FadeIn(ans_bg), Write(ans_txt), run_time=0.5)
-            self.wait(ans_dwell)
-            elapsed += 0.5 + ans_dwell
+            self.wait(max(0.5, DUR.get(akey, 14.0) - 0.5))
 
             self.play(FadeOut(q_bg), FadeOut(q_txt), FadeOut(choices),
                       FadeOut(ans_bg), FadeOut(ans_txt), run_time=0.4)
-            elapsed += 0.4
 
-        self._pad("s10", elapsed)
         self._fade_content(bg)
 
     # ── SCENE 11 — Recap + CTA ────────────────────────────────────

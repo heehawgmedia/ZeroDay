@@ -243,31 +243,44 @@ NARRATIONS = {
         "Water-based sprinkler systems are generally not used in data centers. "
         "Physical access must be logged and the logs reviewed regularly for anomalies."
     ),
-    "s10": (
+    # s10 is split into per-question stem/answer clips so the visual reveals in
+    # the explainer can be driven by each clip's MEASURED duration. This keeps
+    # the answer reveals in sync regardless of TTS engine or speech rate.
+    "s10_q1": (
         "Question one. "
         "A military information system enforces the following rules: "
         "users may read documents at or below their clearance level, "
         "but may only write to documents at or above their clearance level. "
-        "Which security model is implemented? "
+        "Which security model is implemented?"
+    ),
+    "s10_a1": (
         "Answer: Bell-LaPadula. "
         "The simple security property — no read up — and the star property — no write down — define Bell-LaPadula. "
         "Biba is the opposite: no read down, no write up. "
-        "Bell-LaPadula protects confidentiality. Biba protects integrity. "
+        "Bell-LaPadula protects confidentiality. Biba protects integrity."
+    ),
+    "s10_q2": (
         "Question two. "
         "A TLS handshake uses RSA to exchange a session key, "
         "then switches to AES for the duration of the data transfer. "
-        "What cryptographic approach does this represent? "
+        "What cryptographic approach does this represent?"
+    ),
+    "s10_a2": (
         "Answer: hybrid encryption. "
         "RSA — asymmetric — solves the key distribution problem. "
         "AES — symmetric — provides efficient bulk encryption. "
         "Using asymmetric to exchange a symmetric key, then switching to symmetric for data, is hybrid encryption. "
-        "This is how TLS works. "
+        "This is how TLS works."
+    ),
+    "s10_q3": (
         "Question three. "
         "A security administrator discovers that a legacy password database "
         "stores passwords as unsalted MD5 hashes. "
         "An attacker with access to the database could use a precomputed table "
         "to recover most passwords quickly. "
-        "What attack is being described? "
+        "What attack is being described?"
+    ),
+    "s10_a3": (
         "Answer: rainbow table attack. "
         "Rainbow tables are precomputed chains of hash values that enable fast password recovery. "
         "They are defeated by salting — adding a random per-user value before hashing. "
@@ -313,7 +326,12 @@ _DUR_DEFAULTS = {
     "s7":  72.0,
     "s8":  72.0,
     "s9":  68.0,
-    "s10": 72.0,
+    "s10_q1": 14.0,
+    "s10_a1": 16.0,
+    "s10_q2": 13.0,
+    "s10_a2": 18.0,
+    "s10_q3": 18.0,
+    "s10_a3": 20.0,
     "s11": 52.0,
     "s12": 22.0,
 }
