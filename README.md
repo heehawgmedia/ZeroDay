@@ -32,3 +32,29 @@ DNS, VPS, WordPress, billing, and more (155 tools).
 
 In a new session, ask Claude something like *"list my Hostinger domains"* — if the
 token is set correctly, it will answer using the live API.
+
+Note: the Claude Code cloud environment must allow outbound access to
+`developers.hostinger.com` (Network access → Custom → Allowed domains).
+Policy changes only apply to newly started sessions.
+
+## Project: dropshipping store (in progress)
+
+Decisions made so far:
+
+- **Platform:** WordPress + WooCommerce on Hostinger hosting
+- **Supplier:** not chosen yet — leaning toward Spocket/Zendrop (US/EU, fast
+  shipping) vs. AliExpress+DSers (cheaper, slow shipping); decide once the
+  product niche is picked
+- **Domain:** none yet — start on a free temporary subdomain, register a real
+  domain after the niche/name is chosen (requires owner confirmation before
+  purchase)
+- **Niche:** TBD — ask the owner
+
+Next steps for Claude in a fresh session:
+
+1. Verify Hostinger API access (`list my domains`) — if "host not permitted",
+   the network allowlist fix above hasn't taken effect.
+2. Inspect the hosting plan and existing websites/orders.
+3. Create a website on a temporary subdomain, install WordPress + WooCommerce.
+4. Configure store basics (theme, payments, legal pages), then supplier plugin
+   and first products once the niche is chosen.
