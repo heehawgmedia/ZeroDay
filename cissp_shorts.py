@@ -13,6 +13,16 @@ Render:
     manim -qh cissp_shorts.py AuthenticationFactors
     manim -qh cissp_shorts.py Cryptography
     manim -qh cissp_shorts.py MalwareTypes
+    manim -qh cissp_shorts.py OSIModel
+    manim -qh cissp_shorts.py FirewallTypes
+    manim -qh cissp_shorts.py CommonPorts
+    manim -qh cissp_shorts.py WirelessSecurity
+    manim -qh cissp_shorts.py VPNandIPsec
+    manim -qh cissp_shorts.py NetworkAttacks
+    manim -qh cissp_shorts.py BCPvsDRP
+    manim -qh cissp_shorts.py RAIDLevels
+    manim -qh cissp_shorts.py SecurityModels
+    manim -qh cissp_shorts.py CloudModels
 """
 from __future__ import annotations
 import json, os
@@ -1163,3 +1173,683 @@ class MalwareTypes(_Short):
 
         # ── CTA ───────────────────────────────────────────────────────────────
         self._cta_section("Know your malware.\nPass the exam.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 11 — OSI MODEL
+# ═════════════════════════════════════════════════════════════════════════════
+class OSIModel(_Short):
+    ID = "c11"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        seven = Text("7 LAYERS", font_size=52, color=BLUE, weight=BOLD)
+        seven.move_to(UP * 2.6)
+        self.play(Write(seven), run_time=0.5)
+        self.play(Flash(seven, color=BLUE, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("One mnemonic.\nThe OSI model.", font_size=32, color=WHITE,
+                   weight=BOLD, line_spacing=1.2)
+        sub.next_to(seven, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=DOWN * 0.1), run_time=0.45)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("THE OSI MODEL", color=BLUE)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        layers = [
+            ("L7 Application",  "HTTP · DNS · SMTP",        "#AA66FF"),
+            ("L6 Presentation", "Encryption · formatting",  BLUE),
+            ("L5 Session",      "Open / maintain sessions",  GREEN),
+            ("L4 Transport",    "TCP · UDP",                 AMBER),
+            ("L3 Network",      "Routers · IP · routing",    TEAL),
+            ("L2 Data Link",    "Switches · MAC · frames",   RED),
+            ("L1 Physical",     "Cables · hubs · bits",      GRAY),
+        ]
+        rows = []
+        for label, desc, color in layers:
+            glow, card = self._glow_card(8.4, 0.84, color)
+            lbl = Text(label, font_size=16, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.8)
+            d = Text(desc, font_size=12, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.1)
+        grp.move_to(UP * 0.35)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.32)
+            self.wait(2.9)
+
+        tip = self._exam_tip("Switch = L2 · Router = L3 · Encryption = L6")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Seven layers.\nNow you know.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 12 — FIREWALL TYPES
+# ═════════════════════════════════════════════════════════════════════════════
+class FirewallTypes(_Short):
+    ID = "c12"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("5 FIREWALLS", font_size=50, color=RED, weight=BOLD)
+        v.move_to(UP * 2.6)
+        self.play(Write(v), run_time=0.55)
+        self.play(Flash(v, color=RED, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        nope = Text("Not all firewalls\nare equal.", font_size=34, color=WHITE,
+                    weight=BOLD, line_spacing=1.2)
+        nope.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(nope, shift=DOWN * 0.1), run_time=0.45)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("FIREWALL TYPES", color=RED)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        types = [
+            ("PACKET FILTER", "L3/L4 · stateless · IP + port",  GRAY),
+            ("STATEFUL",      "Tracks connections in a table",   BLUE),
+            ("PROXY",         "L7 · inspects actual content",    GREEN),
+            ("NGFW",          "DPI + IPS + app awareness",       AMBER),
+            ("WAF",           "Filters HTTP · stops SQLi & XSS",  "#AA66FF"),
+        ]
+        rows = []
+        for label, desc, color in types:
+            glow, card = self._glow_card(8.4, 1.16, color)
+            lbl = Text(label, font_size=18, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.7)
+            d = Text(desc, font_size=12, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.16)
+        grp.move_to(UP * 0.25)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.38)
+            self.wait(4.3)
+
+        tip = self._exam_tip("Stateful tracks connections · a proxy inspects L7 content.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Firewalls, sorted.\nPass the exam.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 13 — COMMON PORTS
+# ═════════════════════════════════════════════════════════════════════════════
+class CommonPorts(_Short):
+    ID = "c13"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("CLEARTEXT\n= FINDING", font_size=48, color=RED, weight=BOLD,
+                 line_spacing=1.1)
+        v.move_to(UP * 2.4)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=RED, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("Know the secure swaps.", font_size=26, color=AMBER)
+        sub.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("SECURE THE PORTS", color=GREEN)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        swaps = [
+            ("FTP  20/21", "SFTP / FTPS  22"),
+            ("Telnet  23",  "SSH  22"),
+            ("HTTP  80",    "HTTPS  443"),
+            ("SNMP v1/v2",  "SNMP v3"),
+            ("LDAP  389",   "LDAPS  636"),
+        ]
+        rows = []
+        for insec, sec in swaps:
+            glow, card = self._glow_card(8.4, 1.08, BLUE)
+            ins = Text(insec, font_size=16, color=RED, weight=BOLD)
+            ins.move_to(card.get_left() + RIGHT * 1.55)
+            arrow = Text("→", font_size=22, color=WHITE)
+            arrow.move_to(card.get_center() + LEFT * 0.1)
+            arrow.set_y(ins.get_y())
+            secure = Text(sec, font_size=16, color=GREEN, weight=BOLD)
+            secure.move_to(card.get_center() + RIGHT * 2.2)
+            secure.set_y(ins.get_y())
+            rows.append(VGroup(glow, card, ins, arrow, secure))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.16)
+        grp.move_to(UP * 0.25)
+        for g in rows:
+            self.play(FadeIn(g[0]), DrawBorderThenFill(g[1]),
+                      Write(g[2]), FadeIn(g[3]), Write(g[4]), run_time=0.4)
+            self.wait(4.0)
+
+        tip = self._exam_tip("Cleartext credentials → answer = the encrypted equivalent.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Insecure in,\nsecure out.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 14 — WIRELESS SECURITY
+# ═════════════════════════════════════════════════════════════════════════════
+class WirelessSecurity(_Short):
+    ID = "c14"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        one = Text("WEP → WPA3", font_size=48, color=BLUE, weight=BOLD)
+        one.move_to(UP * 2.6)
+        self.play(Write(one), run_time=0.55)
+        self.play(Flash(one, color=BLUE, flash_radius=1.2,
+                        num_lines=10, line_length=0.22), run_time=0.4)
+        sub = Text("Which one is safe?", font_size=28, color=AMBER)
+        sub.next_to(one, DOWN, buff=0.55)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("WIRELESS SECURITY", color=TEAL)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        ladder = [
+            ("WEP",  "BROKEN · weak IV · never use", RED),
+            ("WPA",  "TKIP · now weak",              AMBER),
+            ("WPA2", "AES/CCMP · KRACK vulnerable",  BLUE),
+            ("WPA3", "SAE · CURRENT standard",       GREEN),
+        ]
+        rows = []
+        for label, desc, color in ladder:
+            glow, card = self._glow_card(8.4, 1.24, color)
+            lbl = Text(label, font_size=20, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.3)
+            d = Text(desc, font_size=13, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.35)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.2)
+        grp.move_to(UP * 0.55)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.4)
+            self.wait(4.6)
+
+        ent_glow, ent = self._glow_card(8.4, 1.1, "#AA66FF")
+        ent.move_to(DOWN * 2.7)
+        ent_glow.move_to(DOWN * 2.7)
+        et = VGroup(
+            Text("ENTERPRISE", font_size=16, color="#AA66FF", weight=BOLD),
+            Text("WPA2/3 + 802.1X → per-user auth via RADIUS", font_size=12, color=WHITE),
+        ).arrange(DOWN, buff=0.1)
+        et.move_to(ent.get_center())
+        self.play(FadeIn(ent_glow), DrawBorderThenFill(ent), FadeIn(et), run_time=0.45)
+        self.wait(3.5)
+
+        tip = self._exam_tip("WPA3 for confidentiality · 802.1X for enterprise auth.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.wait(3.0)
+        self._pad("m")
+
+        self._cta_section("WPA3 or bust.\nNow you know.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 15 — VPN & IPsec
+# ═════════════════════════════════════════════════════════════════════════════
+class VPNandIPsec(_Short):
+    ID = "c15"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        one = Text("IPsec", font_size=56, color=GREEN, weight=BOLD)
+        two = Text("2 × 2", font_size=48, color=BLUE, weight=BOLD)
+        motto = VGroup(one, two).arrange(DOWN, buff=0.25)
+        motto.move_to(UP * 2.5)
+        self.play(Write(one), run_time=0.45)
+        self.play(Write(two), run_time=0.45)
+        self.play(Flash(two, color=BLUE, flash_radius=1.1,
+                        num_lines=10, line_length=0.22), run_time=0.4)
+        sub = Text("2 protocols · 2 modes.", font_size=24, color=AMBER)
+        sub.next_to(motto, DOWN, buff=0.55)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("IPsec", color=GREEN)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        glow_p, proto = self._glow_card(3.9, 3.4, AMBER)
+        proto.move_to(LEFT * 2.1 + UP * 2.55)
+        glow_p.move_to(LEFT * 2.1 + UP * 2.55)
+        p_lbl = Text("PROTOCOLS", font_size=18, color=AMBER, weight=BOLD)
+        p_lbl.move_to(proto.get_top() + DOWN * 0.32)
+        p_body = Text("AH\nintegrity only\nNO encryption\n\nESP\nencrypts data",
+                      font_size=13, color=WHITE, line_spacing=1.25)
+        p_body.move_to(proto.get_center() + DOWN * 0.18)
+
+        glow_m, modes = self._glow_card(3.9, 3.4, BLUE)
+        modes.move_to(RIGHT * 2.1 + UP * 2.55)
+        glow_m.move_to(RIGHT * 2.1 + UP * 2.55)
+        m_lbl = Text("MODES", font_size=18, color=BLUE, weight=BOLD)
+        m_lbl.move_to(modes.get_top() + DOWN * 0.32)
+        m_body = Text("Transport\npayload only\nhost-to-host\n\nTunnel\nwhole packet",
+                      font_size=13, color=WHITE, line_spacing=1.25)
+        m_body.move_to(modes.get_center() + DOWN * 0.18)
+
+        self.play(FadeIn(glow_p), DrawBorderThenFill(proto),
+                  FadeIn(p_lbl), FadeIn(p_body), run_time=0.5)
+        self.wait(9.5)
+        self.play(FadeIn(glow_m), DrawBorderThenFill(modes),
+                  FadeIn(m_lbl), FadeIn(m_body), run_time=0.5)
+        self.wait(9.5)
+
+        iglow, ike = self._glow_card(8.2, 1.5, "#AA66FF")
+        ike.move_to(DOWN * 1.7)
+        iglow.move_to(DOWN * 1.7)
+        ic = VGroup(
+            Text("IKE + TLS", font_size=18, color="#AA66FF", weight=BOLD),
+            Text("IKE negotiates keys · TLS secures HTTPS & SSL-VPN", font_size=12, color=WHITE),
+        ).arrange(DOWN, buff=0.12)
+        ic.move_to(ike.get_center())
+        self.play(FadeIn(iglow), DrawBorderThenFill(ike), FadeIn(ic), run_time=0.5)
+        self.wait(6.5)
+
+        tip = self._exam_tip("ESP encrypts, AH does not · tunnel = site-to-site.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Two protocols,\ntwo modes.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 16 — NETWORK ATTACKS
+# ═════════════════════════════════════════════════════════════════════════════
+class NetworkAttacks(_Short):
+    ID = "c16"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("NAME THE\nATTACK", font_size=48, color=RED, weight=BOLD,
+                 line_spacing=1.1)
+        v.move_to(UP * 2.5)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=RED, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("The exam describes it —\nyou name it.", font_size=28, color=WHITE,
+                   weight=BOLD, line_spacing=1.2)
+        sub.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=DOWN * 0.1), run_time=0.45)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("NETWORK ATTACKS", color=RED)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        types = [
+            ("DoS / DDoS",   "Flood via botnet → unavailable",    RED),
+            ("MITM",         "Intercept & relay traffic",          AMBER),
+            ("ARP POISON",   "Forged replies → attacker MAC",      BLUE),
+            ("DNS POISON",   "Corrupt cache · DNSSEC defends",     TEAL),
+            ("SYN FLOOD",    "Half-open handshakes exhaust table", GREEN),
+            ("VLAN HOP",     "Reach another VLAN · double-tag",    "#AA66FF"),
+        ]
+        rows = []
+        for label, desc, color in types:
+            glow, card = self._glow_card(8.4, 1.16, color)
+            lbl = Text(label, font_size=17, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.55)
+            d = Text(desc, font_size=12, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.12)
+        grp.move_to(UP * 0.4)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.38)
+            self.wait(4.2)
+
+        tip = self._exam_tip("Defenses: segmentation, encryption, strong authentication.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Match the clue.\nName the attack.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 17 — BCP vs DRP
+# ═════════════════════════════════════════════════════════════════════════════
+class BCPvsDRP(_Short):
+    ID = "c17"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("RTO · RPO · MTD", font_size=40, color=AMBER, weight=BOLD)
+        v.move_to(UP * 2.6)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=AMBER, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("Three letters that\ntrip up everyone.", font_size=30, color=WHITE,
+                   weight=BOLD, line_spacing=1.2)
+        sub.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=DOWN * 0.1), run_time=0.45)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("BCP vs DRP", color=AMBER)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        items = [
+            ("BCP", "Keeps the whole business running",       BLUE),
+            ("DRP", "Subset · restores IT systems",           TEAL),
+            ("RTO", "Time to RESTORE a system",               GREEN),
+            ("RPO", "Acceptable DATA LOSS (in time)",         AMBER),
+            ("MTD", "Max downtime before real harm",          RED),
+        ]
+        rows = []
+        for label, desc, color in items:
+            glow, card = self._glow_card(8.4, 1.1, color)
+            lbl = Text(label, font_size=19, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.15)
+            d = Text(desc, font_size=13, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.35)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.16)
+        grp.move_to(UP * 0.25)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.4)
+            self.wait(4.2)
+
+        tip = self._exam_tip("RPO = data loss · RTO = time to recover · RTO < MTD.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("RTO, RPO, MTD.\nLocked in.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 18 — RAID LEVELS
+# ═════════════════════════════════════════════════════════════════════════════
+class RAIDLevels(_Short):
+    ID = "c18"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("RAID\n0 · 1 · 5 · 6 · 10", font_size=44, color=GREEN, weight=BOLD,
+                 line_spacing=1.1)
+        v.move_to(UP * 2.4)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=GREEN, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("An availability control.", font_size=26, color=AMBER)
+        sub.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("RAID LEVELS", color=GREEN)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        levels = [
+            ("RAID 0",  "Striping · fast · NO redundancy",   RED),
+            ("RAID 1",  "Mirroring · full copy",             BLUE),
+            ("RAID 5",  "Parity · survives 1 disk fail",     GREEN),
+            ("RAID 6",  "Double parity · survives 2 fails",  TEAL),
+            ("RAID 10", "Mirror + stripe · speed + safety",  AMBER),
+        ]
+        rows = []
+        for label, desc, color in levels:
+            glow, card = self._glow_card(8.4, 1.1, color)
+            lbl = Text(label, font_size=18, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.35)
+            d = Text(desc, font_size=12, color=WHITE)
+            d.next_to(lbl, RIGHT, buff=0.3)
+            d.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, d))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.16)
+        grp.move_to(UP * 0.25)
+        for g in rows:
+            glow, card, lbl, d = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(d, shift=RIGHT * 0.12), run_time=0.4)
+            self.wait(4.2)
+
+        tip = self._exam_tip("RAID 0 = no fault tolerance · RAID 5 survives ONE drive.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("RAID is availability —\nnot a backup.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 19 — SECURITY MODELS
+# ═════════════════════════════════════════════════════════════════════════════
+class SecurityModels(_Short):
+    ID = "c19"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        one = Text("Bell-LaPadula", font_size=38, color=BLUE, weight=BOLD)
+        two = Text("or Biba?",      font_size=42, color=GREEN, weight=BOLD)
+        motto = VGroup(one, two).arrange(DOWN, buff=0.25)
+        motto.move_to(UP * 2.5)
+        self.play(Write(one), run_time=0.45)
+        self.play(Write(two), run_time=0.45)
+        self.play(Flash(two, color=GREEN, flash_radius=1.1,
+                        num_lines=10, line_length=0.22), run_time=0.4)
+        sub = Text("Confidentiality vs integrity.", font_size=22, color=AMBER)
+        sub.next_to(motto, DOWN, buff=0.55)
+        self.play(FadeIn(sub, shift=UP * 0.1), run_time=0.35)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("SECURITY MODELS", color=BLUE)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        glow_b, blp = self._glow_card(3.9, 3.4, BLUE)
+        blp.move_to(LEFT * 2.1 + UP * 2.55)
+        glow_b.move_to(LEFT * 2.1 + UP * 2.55)
+        b_lbl = Text("BELL-LAPADULA", font_size=15, color=BLUE, weight=BOLD)
+        b_lbl.move_to(blp.get_top() + DOWN * 0.32)
+        b_body = Text("Confidentiality\n\nNo READ up\nNo WRITE down\n\nProtects secrets",
+                      font_size=13, color=WHITE, line_spacing=1.3)
+        b_body.move_to(blp.get_center() + DOWN * 0.18)
+
+        glow_i, biba = self._glow_card(3.9, 3.4, GREEN)
+        biba.move_to(RIGHT * 2.1 + UP * 2.55)
+        glow_i.move_to(RIGHT * 2.1 + UP * 2.55)
+        i_lbl = Text("BIBA", font_size=18, color=GREEN, weight=BOLD)
+        i_lbl.move_to(biba.get_top() + DOWN * 0.32)
+        i_body = Text("Integrity\n\nNo READ down\nNo WRITE up\n\nProtects trust",
+                      font_size=13, color=WHITE, line_spacing=1.3)
+        i_body.move_to(biba.get_center() + DOWN * 0.18)
+
+        self.play(FadeIn(glow_b), DrawBorderThenFill(blp),
+                  FadeIn(b_lbl), FadeIn(b_body), run_time=0.5)
+        self.wait(9.5)
+        self.play(FadeIn(glow_i), DrawBorderThenFill(biba),
+                  FadeIn(i_lbl), FadeIn(i_body), run_time=0.5)
+        self.wait(9.5)
+
+        cglow, cw = self._glow_card(8.2, 1.5, AMBER)
+        cw.move_to(DOWN * 1.7)
+        cglow.move_to(DOWN * 1.7)
+        cc = VGroup(
+            Text("CLARK-WILSON", font_size=18, color=AMBER, weight=BOLD),
+            Text("Integrity via well-formed transactions + separation of duties", font_size=12, color=WHITE),
+        ).arrange(DOWN, buff=0.12)
+        cc.move_to(cw.get_center())
+        self.play(FadeIn(cglow), DrawBorderThenFill(cw), FadeIn(cc), run_time=0.5)
+        self.wait(6.0)
+
+        tip = self._exam_tip("Confidentiality → Bell-LaPadula · Integrity → Biba.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.play(Flash(tip, color=RED, flash_radius=0.6,
+                        num_lines=8, line_length=0.15), run_time=0.35)
+        self.wait(3.5)
+        self._pad("m")
+
+        self._cta_section("Secrets or trust?\nNow you know.")
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHORT 20 — CLOUD SERVICE MODELS
+# ═════════════════════════════════════════════════════════════════════════════
+class CloudModels(_Short):
+    ID = "c20"
+
+    def construct(self):
+        self._bg()
+        self.add(self._brand())
+        self._sound("h")
+
+        v = Text("IaaS · PaaS · SaaS", font_size=40, color=TEAL, weight=BOLD)
+        v.move_to(UP * 2.6)
+        self.play(Write(v), run_time=0.6)
+        self.play(Flash(v, color=TEAL, flash_radius=1.3,
+                        num_lines=10, line_length=0.24), run_time=0.4)
+        sub = Text("Who secures what?", font_size=30, color=WHITE, weight=BOLD)
+        sub.next_to(v, DOWN, buff=0.5)
+        self.play(FadeIn(sub, shift=DOWN * 0.1), run_time=0.45)
+        self._pad("h")
+
+        self._fade_all(0.3)
+        self._bg()
+        self.add(self._brand())
+        title = self._scene_title("CLOUD MODELS", color=TEAL)
+        self.play(Write(title), run_time=0.5)
+        self._sound("m")
+
+        models = [
+            ("IaaS", "Provider: compute/storage/net", "You: OS + apps + data", BLUE),
+            ("PaaS", "Provider: OS + runtime",         "You: app + data",       GREEN),
+            ("SaaS", "Provider: runs everything",      "You: just use it",      AMBER),
+        ]
+        rows = []
+        for label, prov, you, color in models:
+            glow, card = self._glow_card(8.4, 1.7, color)
+            lbl = Text(label, font_size=24, color=color, weight=BOLD)
+            lbl.move_to(card.get_left() + RIGHT * 1.1)
+            body = VGroup(
+                Text(prov, font_size=13, color=GRAY),
+                Text(you,  font_size=13, color=WHITE, weight=BOLD),
+            ).arrange(DOWN, buff=0.14, aligned_edge=LEFT)
+            body.next_to(lbl, RIGHT, buff=0.4)
+            body.set_y(lbl.get_y())
+            rows.append(VGroup(glow, card, lbl, body))
+        grp = VGroup(*rows).arrange(DOWN, buff=0.24)
+        grp.move_to(UP * 0.7)
+        for g in rows:
+            glow, card, lbl, body = g
+            self.play(FadeIn(glow), DrawBorderThenFill(card),
+                      Write(lbl), FadeIn(body, shift=RIGHT * 0.12), run_time=0.45)
+            self.wait(6.2)
+
+        srglow, sr = self._glow_card(8.4, 1.05, "#AA66FF")
+        sr.move_to(DOWN * 2.75)
+        srglow.move_to(DOWN * 2.75)
+        srt = VGroup(
+            Text("SHARED RESPONSIBILITY", font_size=15, color="#AA66FF", weight=BOLD),
+            Text("More provider control = less yours — but security is always shared", font_size=11, color=WHITE),
+        ).arrange(DOWN, buff=0.1)
+        srt.move_to(sr.get_center())
+        self.play(FadeIn(srglow), DrawBorderThenFill(sr), FadeIn(srt), run_time=0.45)
+        self.wait(3.0)
+
+        tip = self._exam_tip("In SaaS you STILL own data classification & access.")
+        self.play(FadeIn(tip, scale=0.94), run_time=0.4)
+        self.wait(3.0)
+        self._pad("m")
+
+        self._cta_section("Know the line.\nOwn your data.")

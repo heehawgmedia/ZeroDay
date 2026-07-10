@@ -259,6 +259,208 @@ NARRATIONS = {
         "Save this. Share it. Subscribe for daily exam tips. "
         "Visit zerodaylabs.tech for the full CISSP study book."
     ),
+
+    # ── Short 11: OSI Model ───────────────────────────────────────────────
+    "c11_h": (
+        "Seven layers. One mnemonic. "
+        "The OSI model in thirty seconds — let's go."
+    ),
+    "c11_m": (
+        "Layer one, Physical — the raw bits on the wire. Cables, hubs, repeaters. "
+        "Layer two, Data Link — frames and MAC addresses. Switches live here. "
+        "Layer three, Network — logical IP addressing and routing. This is the router's layer. "
+        "Layer four, Transport — end-to-end delivery. TCP for reliable, UDP for speed. "
+        "Layer five, Session — it opens, maintains, and closes conversations. "
+        "Layer six, Presentation — translation, compression, and encryption. "
+        "Layer seven, Application — the services you actually touch. HTTP, DNS, SMTP. "
+        "Remember it top to bottom: All People Seem To Need Data Processing. "
+        "Exam tip: a switch is layer two, a router is layer three, and encryption is layer six."
+    ),
+    "c11_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 12: Firewall Types ──────────────────────────────────────────
+    "c12_h": (
+        "Not all firewalls are equal. "
+        "Know these five before your exam."
+    ),
+    "c12_m": (
+        "A packet-filtering firewall works at layers three and four. "
+        "It checks IP addresses and ports, but it is stateless — no memory of past traffic. "
+        "A stateful inspection firewall tracks active connections in a state table, "
+        "so it knows if a packet belongs to an established session. "
+        "An application proxy works at layer seven. "
+        "It terminates the connection and inspects the actual content. "
+        "A next-generation firewall adds deep packet inspection, intrusion prevention, and application awareness. "
+        "And a web application firewall filters HTTP to stop SQL injection and cross-site scripting. "
+        "Exam tip: stateful tracks connections, and a proxy inspects layer-seven content."
+    ),
+    "c12_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
+
+    # ── Short 13: Common Ports ────────────────────────────────────────────
+    "c13_h": (
+        "If a protocol sends data in cleartext, it's a finding. "
+        "Know the secure swaps."
+    ),
+    "c13_m": (
+        "FTP moves files in cleartext on ports twenty and twenty-one. Replace it with SFTP or FTPS. "
+        "Telnet gives remote access in cleartext on port twenty-three. Always replace it with SSH on port twenty-two. "
+        "HTTP is cleartext web traffic on port eighty. Use HTTPS on port four-forty-three. "
+        "SNMP version one and two use cleartext strings. Use version three for authentication and encryption. "
+        "DNS runs on port fifty-three. LDAP is three-eighty-nine, and LDAPS over TLS is six-thirty-six. "
+        "Exam tip: when you see cleartext credentials, the answer is almost always the encrypted equivalent."
+    ),
+    "c13_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 14: Wireless Security ───────────────────────────────────────
+    "c14_h": (
+        "WEP, WPA, WPA2, WPA3 — "
+        "which one is safe? Thirty seconds."
+    ),
+    "c14_m": (
+        "WEP is fundamentally broken. Its weak initialization vector can be cracked in minutes. Never use it. "
+        "WPA was an interim fix built on TKIP — also weak today. "
+        "WPA2 uses AES with CCMP and was the standard for years, "
+        "but it is vulnerable to the KRACK attack and to offline guessing of weak passwords. "
+        "WPA3 is the current standard. It uses Simultaneous Authentication of Equals to defeat offline dictionary attacks. "
+        "For business networks, use Enterprise mode with 802.1X, "
+        "which authenticates every user individually against a RADIUS server. "
+        "Watch for the evil twin — a rogue access point impersonating a real one. "
+        "Exam tip: WPA3 for confidentiality, 802.1X for enterprise authentication."
+    ),
+    "c14_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
+
+    # ── Short 15: VPN & IPsec ─────────────────────────────────────────────
+    "c15_h": (
+        "IPsec: two protocols, two modes. "
+        "The exam tests all four."
+    ),
+    "c15_m": (
+        "IPsec has two protocols. AH — Authentication Header — gives you integrity and authentication, but no encryption. "
+        "ESP — Encapsulating Security Payload — adds confidentiality through encryption. "
+        "So when you need secrecy, you use ESP. "
+        "It also has two modes. Transport mode encrypts only the payload — that's for host-to-host. "
+        "Tunnel mode encrypts the entire original packet and adds a new header — that's for site-to-site VPNs. "
+        "IKE, the Internet Key Exchange, negotiates the keys. "
+        "And higher up the stack, TLS secures HTTPS and browser-based SSL VPNs. "
+        "Exam tip: ESP encrypts and AH does not — and tunnel mode is for site-to-site."
+    ),
+    "c15_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 16: Network Attacks ─────────────────────────────────────────
+    "c16_h": (
+        "The exam describes the attack — "
+        "you name it. Can you?"
+    ),
+    "c16_m": (
+        "A denial-of-service floods a target until it's unavailable. "
+        "A distributed version uses a botnet of many compromised hosts. "
+        "A man-in-the-middle secretly intercepts and relays traffic between two parties. "
+        "ARP poisoning sends forged replies to bind the attacker's MAC address to a victim's IP. "
+        "DNS poisoning corrupts cached records to redirect you to a malicious site — DNSSEC defends against it. "
+        "A SYN flood exploits the TCP handshake, leaving half-open connections that exhaust the table. "
+        "And VLAN hopping reaches a segment you shouldn't, through switch spoofing or double-tagging. "
+        "Exam tip: the recurring defenses are segmentation, encryption, and strong authentication."
+    ),
+    "c16_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
+
+    # ── Short 17: BCP vs DRP ──────────────────────────────────────────────
+    "c17_h": (
+        "RTO, RPO, MTD — "
+        "these three letters trip up everyone."
+    ),
+    "c17_m": (
+        "Business continuity keeps the whole organization running during a disruption. "
+        "Disaster recovery is the subset focused on restoring IT systems. "
+        "Now the metrics. RTO — Recovery Time Objective — is how fast you must restore a system. "
+        "RPO — Recovery Point Objective — is how much data you can afford to lose, measured in time. "
+        "MTD — Maximum Tolerable Downtime — is the absolute limit before the business suffers unacceptable harm. "
+        "Your RTO must always be shorter than your MTD. "
+        "And the Business Impact Analysis is what identifies these values in the first place. "
+        "Exam tip: RPO is about data loss; RTO is about time to recover."
+    ),
+    "c17_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 18: RAID Levels ─────────────────────────────────────────────
+    "c18_h": (
+        "RAID is an availability control. "
+        "Know these levels cold."
+    ),
+    "c18_m": (
+        "RAID zero is striping. It's fast, but there's no redundancy — one disk fails and you lose everything. "
+        "RAID one is mirroring. Every write goes to two disks, so you have a full copy. "
+        "RAID five stripes data with distributed parity. It survives one disk failure and uses space efficiently. "
+        "RAID six adds a second parity block, so it survives two simultaneous disk failures. "
+        "RAID ten combines mirroring and striping for both speed and redundancy. "
+        "Remember: RAID protects availability, not confidentiality — and it is never a substitute for backups. "
+        "Exam tip: RAID zero has no fault tolerance, and RAID five survives exactly one drive failure."
+    ),
+    "c18_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
+
+    # ── Short 19: Security Models ─────────────────────────────────────────
+    "c19_h": (
+        "Bell-LaPadula or Biba? "
+        "Confidentiality versus integrity — settled."
+    ),
+    "c19_m": (
+        "Bell-LaPadula is a confidentiality model. It has two rules. "
+        "No read up — you can't read above your clearance. "
+        "And no write down — you can't write below your level. "
+        "Biba is its mirror image — an integrity model. "
+        "No read down — you can't read lower-integrity data. "
+        "And no write up — you can't corrupt higher-integrity data. "
+        "A memory hook: Bell-LaPadula protects secrets, Biba protects trust. "
+        "Clark-Wilson also handles integrity, using well-formed transactions and separation of duties. "
+        "Exam tip: confidentiality points to Bell-LaPadula; integrity points to Biba."
+    ),
+    "c19_c": (
+        "Follow Zero Day Labs for daily CISSP and Security Plus exam tips. "
+        "Like, subscribe, and visit zerodaylabs.tech for the full study book."
+    ),
+
+    # ── Short 20: Cloud Service Models ────────────────────────────────────
+    "c20_h": (
+        "IaaS, PaaS, SaaS — "
+        "who secures what? Know the line."
+    ),
+    "c20_m": (
+        "With Infrastructure as a Service, the provider gives you compute, storage, and networking. "
+        "You manage the operating system and everything above it. "
+        "With Platform as a Service, the provider also manages the OS and runtime, "
+        "so you only handle your application and its data. "
+        "With Software as a Service, the provider runs everything — you just use the software. "
+        "The key idea is the shared responsibility model. "
+        "The more the provider manages, the less you control — but security is always shared. "
+        "And no matter the model, protecting your own data is always your responsibility. "
+        "Exam tip: in SaaS you still own data classification and access management."
+    ),
+    "c20_c": (
+        "Follow for more CISSP and Security Plus breakdowns. "
+        "Like this short if it helped. zerodaylabs.tech for the study book."
+    ),
 }
 
 
